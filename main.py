@@ -174,6 +174,18 @@ class Game:
             self.display_surface.blit(text_surf, text_rect)
             self.display_surface.blit(restart_text_surf, restart_text_rect)
             
+            self.all_sprites.empty()
+            self.enemy_sprites.empty()
+            self.bullet_sprites.empty()
+            self.enemy_bullet_sprites.empty()
+            self.heart_sprites.empty()
+            self.laser_sprites.empty()
+            self.shield_sprites.empty()
+            self.speed_boost_sprites.empty()
+            self.slow_time_sprites.empty()
+            self.rapid_fire_sprites.empty()
+            self.powerup_sprites.empty()
+            
             keys = pygame.key.get_pressed()
             if keys[pygame.K_r]:
                 self.__init__()
