@@ -49,8 +49,8 @@ class Game:
         self.heart_event = pygame.event.custom_type()
         pygame.time.set_timer(self.heart_event, randint(7000,11000))
         
-        self.slow_time = pygame.event.custom_type()
-        pygame.time.set_timer(self.slow_time, randint(11000, 15000))
+        self.slow_time_event = pygame.event.custom_type()
+        pygame.time.set_timer(self.slow_time_event, randint(11000, 15000))
         self.reset_time = pygame.event.custom_type()
         
         self.shield_event = pygame.event.custom_type()
@@ -85,6 +85,12 @@ class Game:
             self.player.can_shoot = False
             self.player.shoot_time = pygame.time.get_ticks()
 
+    def collision_logic(self, a, b, func):
+        for sprite in b:
+            if pygame.sprite.spritecollide(a, b, False, pygame.sprite.collide_mask):
+                sprite.kill()
+                func()
+
     def screen_shake(self):
         if self.shake_duration > 0:
             self.shake_intensity = max(self.shake_intensity-1, 0)
@@ -98,55 +104,49 @@ class Game:
         else:
             self.shake_offset = (0, 0)
 
-    def collisions(self):
+    def activate_shield(self):
+        self.player.invincible = True
+        pygame.time.set_timer(self.end_invincibility, 5000)
+
+    def kill_player(self):
+        if not self.player.invincible:
+            self.lives_remaining = 0
+
+    def gain_life(self):
+        self.lives_remaining += 1
+
+    def minus_life(self):
+        if not self.player.invincible:
+            self.lives_remaining -= 1
+            self.shake_duration = 300
+            self.shake_intensity = 50
+
+    def activate_speed_boost(self):
+        self.player.speed = 900
+        pygame.time.set_timer(self.end_speed_boost, 5000)
+
+    def activate_rapidfire(self):
+        self.rapid_fire = True
+        pygame.time.set_timer(self.end_rapid_fire, 5000)
+
+    def slow_time(self):
+        self.slowed = True
+        pygame.time.set_timer(self.reset_time, 5000)
+
+    def check_collisions(self):
+        self.collision_logic(self.player, self.shield_sprites, lambda: self.activate_shield())
+        self.collision_logic(self.player, self.heart_sprites, lambda: self.gain_life())
+        self.collision_logic(self.player, self.speed_boost_sprites, lambda: self.activate_speed_boost())
+        self.collision_logic(self.player, self.rapid_fire_sprites, lambda: self.activate_rapidfire())
+        self.collision_logic(self.player, self.slow_time_sprites, lambda: self.slow_time())
+        self.collision_logic(self.player, self.laser_sprites, lambda: self.kill_player())
+        self.collision_logic(self.player, self.enemy_bullet_sprites, lambda: self.minus_life())
+
         for bullet in self.bullet_sprites:
             enemies_hit = pygame.sprite.spritecollide(bullet, self.enemy_sprites, True, pygame.sprite.collide_mask)
             if enemies_hit:
                 bullet.kill()
             self.enemies_killed += len(enemies_hit)
-
-        for enemybullet in self.enemy_bullet_sprites:
-            if pygame.sprite.spritecollide(self.player, self.enemy_bullet_sprites, False, pygame.sprite.collide_mask):
-                enemybullet.kill()
-                if not self.player.invincible:
-                    self.lives_remaining -= 1
-                self.shake_duration = 300
-                self.shake_intensity = 50
-
-        for life in self.heart_sprites:
-            if pygame.sprite.spritecollide(self.player, self.heart_sprites, False, pygame.sprite.collide_mask):
-                life.kill()
-                self.lives_remaining += 1
-
-        for laser in self.laser_sprites:
-            if pygame.sprite.spritecollide(self.player, self.laser_sprites, False, pygame.sprite.collide_mask):
-                laser.kill()
-                if not self.player.invincible:
-                    self.lives_remaining = 0
-        
-        for shield in self.shield_sprites:
-            if pygame.sprite.spritecollide(self.player, self.shield_sprites, False, pygame.sprite.collide_mask):
-                shield.kill()
-                self.player.invincible = True
-                pygame.time.set_timer(self.end_invincibility, 5000)
-        
-        for boost in self.speed_boost_sprites:
-            if pygame.sprite.spritecollide(self.player, self.speed_boost_sprites, False, pygame.sprite.collide_mask):
-                boost.kill()
-                self.player.speed = 900
-                pygame.time.set_timer(self.end_speed_boost, 5000)
-        
-        for spiral in self.slow_time_sprites:
-            if pygame.sprite.spritecollide(self.player, self.slow_time_sprites, False, pygame.sprite.collide_mask):
-                spiral.kill()
-                self.slowed = True
-                pygame.time.set_timer(self.reset_time, 5000)
-
-        for rapid in self.rapid_fire_sprites:
-            if pygame.sprite.spritecollide(self.player, self.rapid_fire_sprites, False, pygame.sprite.collide_mask):
-                rapid.kill()
-                self.rapid_fire = True
-                pygame.time.set_timer(self.end_rapid_fire, 5000)
 
         for enemy in self.enemy_sprites:
             if enemy.rect.top > 570:
@@ -234,7 +234,7 @@ class Game:
         for _ in range(self.lives_remaining):
             self.display_surface.blit(lives_img, (x,10))
             x += lives_img_width + 10
-    
+
     def display_score(self):
         if not self.is_game_over:
             font = pygame.font.Font("Fonts/Oxanium-Bold.ttf", 30)
@@ -268,7 +268,7 @@ class Game:
                 if event.type == self.speed_boost_event and self.enemy_sprites:
                     PowerupItem((self.all_sprites, self.speed_boost_sprites, self.powerup_sprites), choice(list(self.enemy_sprites)), "Space Invaders 2/Images/speedboost.png")
                 
-                if event.type == self.slow_time and self.enemy_sprites:
+                if event.type == self.slow_time_event and self.enemy_sprites:
                     PowerupItem((self.all_sprites, self.slow_time_sprites, self.powerup_sprites), choice(list(self.enemy_sprites)), "Space Invaders 2/Images/spiral.png")
 
                 if event.type == self.rapid_fire_event and self.enemy_sprites:
@@ -333,7 +333,7 @@ class Game:
                 self.all_sprites.draw(self.display_surface)
                 self.display_fps()
                 self.input()
-                self.collisions()
+                self.check_collisions()
                 self.gun_timer()
                 self.display_lives()
                 self.game_over()
