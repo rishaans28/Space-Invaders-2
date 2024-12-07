@@ -21,6 +21,9 @@ class Game:
         self.shake_duration = 0
         self.shake_intensity = 0
         self.shake_offset = (0,0)
+        
+        self.last_boss_fight_score = 0
+        self.is_boss_active = False
 
         self.all_sprites = pygame.sprite.Group()
         self.enemy_sprites = pygame.sprite.Group()
@@ -153,6 +156,15 @@ class Game:
                 enemy.kill()
                 if not self.player.invincible:
                     self.lives_remaining -= 1
+        
+        if hasattr(self, "boss") and self.boss.alive():
+            for bullet in self.bullet_sprites:
+                if pygame.sprite.collide_mask(bullet, self.boss):
+                    bullet.kill()
+                    self.boss.lives -= 1
+                    if self.boss.lives <= 0:
+                        self.boss.kill()
+            pygame.time.set_timer(self.enemy_event, randint(1000,2000))
 
     def game_over(self):
         if self.lives_remaining <= 0 and not self.is_game_over:
@@ -211,6 +223,15 @@ class Game:
             score_text = font.render(f"HIGHSCORE: {self.highscore}", True, (255,255,255))
             score_rect = score_text.get_frect(center = (WINDOW_WIDTH/2, WINDOW_HEIGHT/2 + 130))
         self.display_surface.blit(score_text, score_rect)
+
+    def boss_fight(self):
+        if self.enemies_killed % 15 == 0 and self.enemies_killed != 0 and self.enemies_killed != self.last_boss_fight_score:
+            self.last_boss_fight_score = self.enemies_killed
+            self.is_boss_active = True
+            pygame.time.set_timer(self.enemy_event, 0)
+            for sprite in self.enemy_sprites:
+                sprite.kill()
+            self.boss = Boss(self.all_sprites)
 
     def gun_timer(self):
         if not self.player.can_shoot:
@@ -276,7 +297,7 @@ class Game:
 
                 if event.type == self.end_speed_boost:
                     self.player.speed = 550
-                
+
                 if event.type == self.end_invincibility:
                     self.player.invincible = False
                 
@@ -337,6 +358,7 @@ class Game:
                 self.gun_timer()
                 self.display_lives()
                 self.game_over()
+                self.boss_fight()
             else:
                 self.display_game_over()
             self.display_highscore()
