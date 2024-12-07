@@ -131,7 +131,7 @@ class Boss(pygame.sprite.Sprite):
         super().__init__(groups)
         self.image = pygame.image.load("Space Invaders 2/Images/boss.png")
         self.rect = self.image.get_frect(midtop = (WINDOW_WIDTH/2, 0))
-        self.speed = 600
+        self.speed = BOSS_MOVING_SPEED
         self.direction = pygame.Vector2(1,0)
         self.lives = 10
     
