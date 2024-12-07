@@ -73,6 +73,8 @@ class Game:
 
         self.laser_event = pygame.event.custom_type()
         self.delete_laser_event = pygame.event.custom_type()
+        
+        self.randomize_boss = pygame.event.custom_type()
 
         self.music = pygame.mixer.Sound("Space Invaders 2/Audio/music.mp3")
         self.music.set_volume(0.5)
@@ -164,6 +166,8 @@ class Game:
                     self.boss.lives -= 1
                     if self.boss.lives <= 0:
                         self.boss.kill()
+                        self.shake_duration = 2000
+                        self.shake_intensity = 100
             pygame.time.set_timer(self.enemy_event, randint(1000,2000))
 
     def game_over(self):
@@ -232,6 +236,7 @@ class Game:
             for sprite in self.enemy_sprites:
                 sprite.kill()
             self.boss = Boss(self.all_sprites)
+            pygame.time.set_timer(self.randomize_boss, randint(1000,3000))
 
     def gun_timer(self):
         if not self.player.can_shoot:
@@ -323,6 +328,9 @@ class Game:
                         laser.kill()
                     pygame.time.set_timer(self.delete_laser_event, 0)
                     pygame.time.set_timer(self.warning_event, randint(10000,15000))
+                
+                if event.type == self.randomize_boss and self.boss.alive():
+                    self.boss.randomize_direction()
 
             self.display_surface.fill("#000000")
             
