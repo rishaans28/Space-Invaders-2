@@ -135,6 +135,9 @@ class Boss(pygame.sprite.Sprite):
         self.direction = pygame.Vector2(1,0)
         self.lives = 10
     
+    def randomize_direction(self):
+        self.direction.x *= -1
+    
     def boundaries(self):
         if self.rect.right >= WINDOW_WIDTH:
             self.direction.x *= -1
