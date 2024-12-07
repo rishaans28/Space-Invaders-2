@@ -165,9 +165,9 @@ class Game:
                     bullet.kill()
                     self.boss.lives -= 1
                     if self.boss.lives <= 0:
-                        self.boss.kill()
                         self.shake_duration = 2000
                         self.shake_intensity = 100
+                        self.boss.kill()
             pygame.time.set_timer(self.enemy_event, randint(1000,2000))
 
     def game_over(self):
@@ -236,7 +236,7 @@ class Game:
             for sprite in self.enemy_sprites:
                 sprite.kill()
             self.boss = Boss(self.all_sprites)
-            pygame.time.set_timer(self.randomize_boss, randint(1000,3000))
+            pygame.time.set_timer(self.randomize_boss, randint(2000,5000))
 
     def gun_timer(self):
         if not self.player.can_shoot:
