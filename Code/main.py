@@ -168,6 +168,7 @@ class Game:
                         self.shake_duration = 2000
                         self.shake_intensity = 100
                         self.boss.kill()
+                        self.enemies_killed += 5
             pygame.time.set_timer(self.enemy_event, randint(1000,2000))
 
     def game_over(self):
