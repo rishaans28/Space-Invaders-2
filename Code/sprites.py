@@ -11,7 +11,7 @@ class Player(pygame.sprite.Sprite):
         self.shoot_time = 0
         self.cooldown_duration = 500
         self.invincible = False
-    
+
     def boundaries(self):
         if self.rect.right >= WINDOW_WIDTH:
             self.rect.right = WINDOW_WIDTH
@@ -125,3 +125,25 @@ class Laser(pygame.sprite.Sprite):
     
     def update(self, dt):
         pass
+
+class Boss(pygame.sprite.Sprite):
+    def __init__(self, groups):
+        super().__init__(groups)
+        self.image = pygame.image.load("Space Invaders 2/Images/boss.png")
+        self.rect = self.image.get_frect(midtop = (WINDOW_WIDTH/2, 0))
+        self.speed = 600
+        self.direction = pygame.Vector2(1,0)
+        self.lives = 10
+    
+    def boundaries(self):
+        if self.rect.right >= WINDOW_WIDTH:
+            self.direction.x *= -1
+        if self.rect.left <= 0:
+            self.direction.x *= -1
+    
+    def move(self, dt):
+        self.rect.center += self.direction * self.speed * dt
+    
+    def update(self, dt):
+        self.move(dt)
+        self.boundaries()
