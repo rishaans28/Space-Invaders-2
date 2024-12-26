@@ -24,6 +24,8 @@ class Game:
         
         self.last_boss_fight_score = 0
         self.is_boss_active = False
+        
+        self.double_points = False
 
         self.all_sprites = pygame.sprite.Group()
         self.enemy_sprites = pygame.sprite.Group()
@@ -36,6 +38,7 @@ class Game:
         self.slow_time_sprites = pygame.sprite.Group()
         self.rapid_fire_sprites = pygame.sprite.Group()
         self.powerup_sprites = pygame.sprite.Group()
+        self.double_points_sprites = pygame.sprite.Group()
 
         self.player = Player(self.all_sprites)
         self.lives_remaining = 3
@@ -70,6 +73,10 @@ class Game:
         self.speed_boost_event = pygame.event.custom_type()
         pygame.time.set_timer(self.speed_boost_event, randint(10000,15000))
         self.end_speed_boost = pygame.event.custom_type()
+        
+        self.double_points_event = pygame.event.custom_type()
+        pygame.time.set_timer(self.double_points_event, randint(10000,15000))
+        self.end_double_points = pygame.event.custom_type()
 
         self.laser_event = pygame.event.custom_type()
         self.delete_laser_event = pygame.event.custom_type()
@@ -138,6 +145,10 @@ class Game:
         self.slowed = True
         pygame.time.set_timer(self.reset_time, 5000)
 
+    def double_points_func(self):
+        self.double_points = True
+        pygame.time.set_timer(self.end_double_points, 5000)
+
     def check_collisions(self):
         self.collision_logic(self.player, self.shield_sprites, lambda: self.activate_shield())
         self.collision_logic(self.player, self.heart_sprites, lambda: self.gain_life())
@@ -146,19 +157,20 @@ class Game:
         self.collision_logic(self.player, self.slow_time_sprites, lambda: self.slow_time())
         self.collision_logic(self.player, self.laser_sprites, lambda: self.kill_player())
         self.collision_logic(self.player, self.enemy_bullet_sprites, lambda: self.minus_life())
+        self.collision_logic(self.player, self.double_points_sprites, lambda: self.double_points_func())
 
         for bullet in self.bullet_sprites:
             enemies_hit = pygame.sprite.spritecollide(bullet, self.enemy_sprites, True, pygame.sprite.collide_mask)
             if enemies_hit:
                 bullet.kill()
-            self.enemies_killed += len(enemies_hit)
+            self.enemies_killed += len(enemies_hit) * 2 if self.double_points else len(enemies_hit)
 
         for enemy in self.enemy_sprites:
             if enemy.rect.top > 570:
                 enemy.kill()
                 if not self.player.invincible:
                     self.lives_remaining -= 1
-        
+
         if hasattr(self, "boss") and self.boss.alive():
             for bullet in self.bullet_sprites:
                 if pygame.sprite.collide_mask(bullet, self.boss):
@@ -168,7 +180,9 @@ class Game:
                         self.shake_duration = 2000
                         self.shake_intensity = 100
                         self.boss.kill()
+                        self.is_boss_active = False
                         self.enemies_killed += 5
+                        pygame.time.set_timer(self.enemy_bullet_event, randint(300,550))
             pygame.time.set_timer(self.enemy_event, randint(1000,2000))
 
     def game_over(self):
@@ -230,7 +244,7 @@ class Game:
         self.display_surface.blit(score_text, score_rect)
 
     def boss_fight(self):
-        if self.enemies_killed % 15 == 0 and self.enemies_killed != 0 and self.enemies_killed != self.last_boss_fight_score:
+        if self.enemies_killed % 20 == 0 and self.enemies_killed != 0 and self.enemies_killed != self.last_boss_fight_score:
             self.last_boss_fight_score = self.enemies_killed
             self.is_boss_active = True
             pygame.time.set_timer(self.enemy_event, 0)
@@ -238,6 +252,7 @@ class Game:
                 sprite.kill()
             self.boss = Boss(self.all_sprites)
             pygame.time.set_timer(self.randomize_boss, randint(2000,5000))
+            pygame.time.set_timer(self.enemy_bullet_event, randint(250,300))
 
     def gun_timer(self):
         if not self.player.can_shoot:
@@ -283,8 +298,9 @@ class Game:
                 if event.type == self.enemy_event:
                     self.enemy = Enemy((self.all_sprites, self.enemy_sprites), randint(0, WINDOW_WIDTH))
 
-                if event.type == self.enemy_bullet_event and self.enemy_sprites:
-                    EnemyBullet((self.all_sprites, self.enemy_bullet_sprites), choice(list(self.enemy_sprites)))
+                if event.type == self.enemy_bullet_event and (self.enemy_sprites or self.is_boss_active):
+                    EnemyBullet((self.all_sprites, self.enemy_bullet_sprites), choice(list(self.enemy_sprites)), boss=False) if not self.is_boss_active \
+                    else EnemyBullet((self.all_sprites, self.enemy_bullet_sprites), self.boss, boss=True)
 
                 if event.type == self.heart_event and self.enemy_sprites and self.lives_remaining != 5:
                     PowerupItem((self.all_sprites, self.heart_sprites, self.powerup_sprites), choice(list(self.enemy_sprites)), "Space Invaders 2/Images/heart.png")
@@ -301,6 +317,9 @@ class Game:
                 if event.type == self.rapid_fire_event and self.enemy_sprites:
                     PowerupItem((self.all_sprites, self.rapid_fire_sprites, self.powerup_sprites), choice(list(self.enemy_sprites)), "Space Invaders 2/Images/lightning.png")
 
+                if event.type == self.double_points_event and self.enemy_sprites:
+                    PowerupItem((self.all_sprites, self.double_points_sprites, self.powerup_sprites), choice(list(self.enemy_sprites)), "Space Invaders 2/Images/doublepoints.png")
+
                 if event.type == self.end_speed_boost:
                     self.player.speed = 550
 
@@ -312,6 +331,9 @@ class Game:
                 
                 if event.type == self.end_rapid_fire:
                     self.rapid_fire = False
+                
+                if event.type == self.end_double_points:
+                    self.double_points = False
 
                 if event.type == self.warning_event:
                     self.danger_sign = DangerSign(self.all_sprites, (randint(40, WINDOW_WIDTH-40), randint(40, WINDOW_HEIGHT-40)))
