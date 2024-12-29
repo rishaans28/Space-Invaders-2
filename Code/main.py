@@ -89,6 +89,7 @@ class Game:
         self.music.play(loops=-1)
         self.shoot_sound = pygame.mixer.Sound("Space Invaders 2/Audio/laser.wav")
         self.impact_sound = pygame.mixer.Sound("Space Invaders 2/Audio/impact.ogg")
+        self.explosion_sound = pygame.mixer.Sound("Space Invaders 2/Audio/explosion.wav")
 
     def input(self):
         recent_keys = pygame.key.get_just_pressed()
@@ -183,6 +184,7 @@ class Game:
                         self.boss.kill()
                         self.is_boss_active = False
                         self.enemies_killed += 5
+                        self.explosion_sound.play()
                         pygame.time.set_timer(self.enemy_bullet_event, randint(300,550))
             pygame.time.set_timer(self.enemy_event, randint(1000,2000))
 
@@ -371,10 +373,12 @@ class Game:
                 self.music.set_volume(0)
                 self.shoot_sound.set_volume(0)
                 self.impact_sound.set_volume(0)
+                self.explosion_sound.set_volume(0)
             else:
                 self.music.set_volume(1)
                 self.shoot_sound.set_volume(0.5)
                 self.impact_sound.set_volume(2)
+                self.explosion_sound.set_volume(1)
             
             if self.slowed:
                 for enemy in self.enemy_sprites:
