@@ -291,7 +291,7 @@ class Game:
 
     def display_volume(self):
         surf = pygame.image.load("Space Invaders 2/Images/unmuted.png") if not self.muted else pygame.image.load("Space Invaders 2/Images/muted.png")
-        rect = surf.get_frect(topleft = (0,90))
+        rect = surf.get_frect(topleft = (0,80))
         self.display_surface.blit(surf, rect)
 
     def run(self):
