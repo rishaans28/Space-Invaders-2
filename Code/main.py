@@ -26,6 +26,8 @@ class Game:
         self.is_boss_active = False
         
         self.double_points = False
+        
+        self.muted = False
 
         self.all_sprites = pygame.sprite.Group()
         self.enemy_sprites = pygame.sprite.Group()
@@ -60,22 +62,22 @@ class Game:
         self.reset_time = pygame.event.custom_type()
         
         self.shield_event = pygame.event.custom_type()
-        pygame.time.set_timer(self.shield_event, randint(11000,15000))
+        pygame.time.set_timer(self.shield_event, randint(13000,15000))
         self.end_invincibility = pygame.event.custom_type()
         
         self.rapid_fire_event = pygame.event.custom_type()
-        pygame.time.set_timer(self.rapid_fire_event, randint(11000, 15000))
+        pygame.time.set_timer(self.rapid_fire_event, randint(17000, 18000))
         self.end_rapid_fire = pygame.event.custom_type()
         
         self.warning_event = pygame.event.custom_type()
-        pygame.time.set_timer(self.warning_event, randint(10000,15000))
+        pygame.time.set_timer(self.warning_event, randint(9000,13000))
         
         self.speed_boost_event = pygame.event.custom_type()
-        pygame.time.set_timer(self.speed_boost_event, randint(10000,15000))
+        pygame.time.set_timer(self.speed_boost_event, randint(10500,15000))
         self.end_speed_boost = pygame.event.custom_type()
         
         self.double_points_event = pygame.event.custom_type()
-        pygame.time.set_timer(self.double_points_event, randint(10000,15000))
+        pygame.time.set_timer(self.double_points_event, randint(15000,16000))
         self.end_double_points = pygame.event.custom_type()
 
         self.laser_event = pygame.event.custom_type()
@@ -84,7 +86,6 @@ class Game:
         self.randomize_boss = pygame.event.custom_type()
 
         self.music = pygame.mixer.Sound("Space Invaders 2/Audio/music.mp3")
-        self.music.set_volume(0.5)
         self.music.play(loops=-1)
         self.shoot_sound = pygame.mixer.Sound("Space Invaders 2/Audio/laser.wav")
         self.impact_sound = pygame.mixer.Sound("Space Invaders 2/Audio/impact.ogg")
@@ -252,7 +253,7 @@ class Game:
                 sprite.kill()
             self.boss = Boss(self.all_sprites)
             pygame.time.set_timer(self.randomize_boss, randint(2000,5000))
-            pygame.time.set_timer(self.enemy_bullet_event, randint(250,300))
+            pygame.time.set_timer(self.enemy_bullet_event, randint(100,150))
 
     def gun_timer(self):
         if not self.player.can_shoot:
@@ -263,7 +264,7 @@ class Game:
     def display_fps(self):
         font = pygame.font.Font("Fonts/Oxanium-Bold.ttf", 30)
         text_surf = font.render("FPS: " + str(round(self.clock.get_fps(), 2)), True, (255, 255, 255))
-        text_rect = text_surf.get_frect(topright = (WINDOW_WIDTH, 0))
+        text_rect = text_surf.get_frect(topleft = (0, 60))
         self.display_surface.blit(text_surf, text_rect)
 
     def display_lives(self):
@@ -287,6 +288,11 @@ class Game:
             score_text = font.render(f"SCORE: {self.enemies_killed}", True, (255,255,255))
             score_rect = score_text.get_frect(center = (WINDOW_WIDTH/2, WINDOW_HEIGHT/2 + 75))
         self.display_surface.blit(score_text, score_rect)
+
+    def display_volume(self):
+        surf = pygame.image.load("Space Invaders 2/Images/unmuted.png") if not self.muted else pygame.image.load("Space Invaders 2/Images/muted.png")
+        rect = surf.get_frect(topleft = (0,90))
+        self.display_surface.blit(surf, rect)
 
     def run(self):
         while self.running:
@@ -328,10 +334,10 @@ class Game:
                 
                 if event.type == self.reset_time:
                     self.slowed = False
-                
+
                 if event.type == self.end_rapid_fire:
                     self.rapid_fire = False
-                
+
                 if event.type == self.end_double_points:
                     self.double_points = False
 
@@ -356,6 +362,19 @@ class Game:
                     self.boss.randomize_direction()
 
             self.display_surface.fill("#000000")
+
+            recent_keys = pygame.key.get_just_pressed()
+            if recent_keys[pygame.K_m]:
+                self.muted = not self.muted
+
+            if self.muted:
+                self.music.set_volume(0)
+                self.shoot_sound.set_volume(0)
+                self.impact_sound.set_volume(0)
+            else:
+                self.music.set_volume(1)
+                self.shoot_sound.set_volume(0.5)
+                self.impact_sound.set_volume(2)
             
             if self.slowed:
                 for enemy in self.enemy_sprites:
@@ -371,7 +390,7 @@ class Game:
                     bullet.speed = 550
                 for powerup in self.powerup_sprites:
                     powerup.speed = 350
-            
+
             self.player.cooldown_duration = 150 if self.rapid_fire else 500
 
             if not self.is_game_over:
@@ -388,6 +407,7 @@ class Game:
                 self.check_collisions()
                 self.gun_timer()
                 self.display_lives()
+                self.display_volume()
                 self.game_over()
                 self.boss_fight()
             else:
