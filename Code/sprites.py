@@ -79,7 +79,7 @@ class EnemyBullet(pygame.sprite.Sprite):
         super().__init__(groups)
         self.original_img = pygame.image.load("Space Invaders 2/Images/bullet.png").convert_alpha()
         self.image = pygame.transform.rotozoom(self.original_img, 180, 1)
-        self.rect = self.image.get_frect(center = enemy.rect.center) if not boss else self.image.get_frect(midtop = (randint(0, WINDOW_HEIGHT), 0))
+        self.rect = self.image.get_frect(center = enemy.rect.center) if not boss else self.image.get_frect(midtop = (randint(0, WINDOW_WIDTH), 0))
         self.speed = ENEMY_BULLET_MOVING_SPEED
 
     def move(self, dt):
@@ -112,9 +112,6 @@ class DangerSign(pygame.sprite.Sprite):
         self.pos = (pos[0], pos[1])
         self.rect = self.image.get_frect(center = self.pos)
 
-    def update(self, dt):
-        pass
-
 class Laser(pygame.sprite.Sprite):
     def __init__(self, groups, danger_sign):
         super().__init__(groups)
@@ -122,9 +119,6 @@ class Laser(pygame.sprite.Sprite):
         self.image = pygame.Surface((randint(50,150),WINDOW_HEIGHT))
         self.rect = self.image.get_frect(midtop = (self.danger_sign.pos[0], 0))
         pygame.Surface.fill(self.image, (255,0,0))
-    
-    def update(self, dt):
-        pass
 
 class Boss(pygame.sprite.Sprite):
     def __init__(self, groups):
