@@ -14,6 +14,7 @@ class Game:
         self.is_game_over = False
         
         self.enemies_killed = 0
+        self.last_hit_time = 0
         
         self.slowed = False
         self.rapid_fire = False
@@ -55,14 +56,14 @@ class Game:
         pygame.time.set_timer(self.enemy_bullet_event, randint(300,550))
         
         self.heart_event = pygame.event.custom_type()
-        pygame.time.set_timer(self.heart_event, randint(7000,11000))
+        pygame.time.set_timer(self.heart_event, randint(7000,10000))
         
         self.slow_time_event = pygame.event.custom_type()
-        pygame.time.set_timer(self.slow_time_event, randint(11000, 15000))
+        pygame.time.set_timer(self.slow_time_event, randint(14000, 15000))
         self.reset_time = pygame.event.custom_type()
         
         self.shield_event = pygame.event.custom_type()
-        pygame.time.set_timer(self.shield_event, randint(13000,15000))
+        pygame.time.set_timer(self.shield_event, randint(15000,18000))
         self.end_invincibility = pygame.event.custom_type()
         
         self.rapid_fire_event = pygame.event.custom_type()
@@ -70,14 +71,14 @@ class Game:
         self.end_rapid_fire = pygame.event.custom_type()
         
         self.warning_event = pygame.event.custom_type()
-        pygame.time.set_timer(self.warning_event, randint(9000,13000))
+        pygame.time.set_timer(self.warning_event, randint(9000,12000))
         
         self.speed_boost_event = pygame.event.custom_type()
-        pygame.time.set_timer(self.speed_boost_event, randint(10500,15000))
+        pygame.time.set_timer(self.speed_boost_event, randint(11000,13000))
         self.end_speed_boost = pygame.event.custom_type()
         
         self.double_points_event = pygame.event.custom_type()
-        pygame.time.set_timer(self.double_points_event, randint(15000,16000))
+        pygame.time.set_timer(self.double_points_event, randint(15000,17000))
         self.end_double_points = pygame.event.custom_type()
 
         self.laser_event = pygame.event.custom_type()
@@ -130,10 +131,13 @@ class Game:
         self.lives_remaining += 1
 
     def minus_life(self):
+        current_time = pygame.time.get_ticks()
         if not self.player.invincible:
-            self.lives_remaining -= 1
-            self.shake_duration = 300
-            self.shake_intensity = 50
+            if current_time - self.last_hit_time > 10:
+                self.last_hit_time = pygame.time.get_ticks()
+                self.lives_remaining -= 1
+                self.shake_duration = 300
+                self.shake_intensity = 50
 
     def activate_speed_boost(self):
         self.player.speed = 900
