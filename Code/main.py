@@ -28,7 +28,7 @@ class Game:
         
         self.double_points = False
         
-        self.muted = False
+        self.muted = True
 
         self.all_sprites = pygame.sprite.Group()
         self.enemy_sprites = pygame.sprite.Group()
@@ -251,7 +251,8 @@ class Game:
         self.display_surface.blit(score_text, score_rect)
 
     def boss_fight(self):
-        if self.enemies_killed % 20 == 0 and self.enemies_killed != 0 and self.enemies_killed != self.last_boss_fight_score:
+        if self.enemies_killed % 20 == 0 and self.enemies_killed != 0 and self.enemies_killed != self.last_boss_fight_score or \
+            (self.enemies_killed % 20) - 1 == 0 and self.double_points and self.enemies_killed != 0 and self.enemies_killed != self.last_boss_fight_score:
             self.last_boss_fight_score = self.enemies_killed
             self.is_boss_active = True
             pygame.time.set_timer(self.enemy_event, 0)
