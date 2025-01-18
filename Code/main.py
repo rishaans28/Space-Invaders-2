@@ -42,6 +42,7 @@ class Game:
         self.rapid_fire_sprites = pygame.sprite.Group()
         self.powerup_sprites = pygame.sprite.Group()
         self.double_points_sprites = pygame.sprite.Group()
+        self.teleport_enemies = pygame.sprite.Group()
 
         self.player = Player(self.all_sprites)
         self.lives_remaining = 3
@@ -85,6 +86,9 @@ class Game:
         self.delete_laser_event = pygame.event.custom_type()
         
         self.randomize_boss = pygame.event.custom_type()
+        
+        self.spawn_teleport_enemy = pygame.event.custom_type()
+        pygame.time.set_timer(self.spawn_teleport_enemy, randint(15000, 20000))
 
         self.music = pygame.mixer.Sound("Space Invaders 2/Audio/music.mp3")
         self.music.play(loops=-1)
@@ -164,9 +168,14 @@ class Game:
         self.collision_logic(self.player, self.laser_sprites, lambda: self.kill_player())
         self.collision_logic(self.player, self.enemy_bullet_sprites, lambda: self.minus_life())
         self.collision_logic(self.player, self.double_points_sprites, lambda: self.double_points_func())
+        
+        for enemy in self.teleport_enemies:
+            if enemy.is_over:
+                self.kill_player()  
 
         for bullet in self.bullet_sprites:
-            enemies_hit = pygame.sprite.spritecollide(bullet, self.enemy_sprites, True, pygame.sprite.collide_mask)
+            enemies_hit = pygame.sprite.spritecollide(bullet, self.enemy_sprites, True, pygame.sprite.collide_mask) \
+                or pygame.sprite.spritecollide(bullet, self.teleport_enemies, True, pygame.sprite.collide_mask)
             if enemies_hit:
                 bullet.kill()
             self.enemies_killed += len(enemies_hit) * 2 if self.double_points else len(enemies_hit)
@@ -317,7 +326,7 @@ class Game:
 
                 if event.type == self.heart_event and self.enemy_sprites and self.lives_remaining != 5:
                     PowerupItem((self.all_sprites, self.heart_sprites, self.powerup_sprites), choice(list(self.enemy_sprites)), "Space Invaders 2/Images/heart.png")
-                
+
                 if event.type == self.shield_event and self.enemy_sprites:
                     PowerupItem((self.all_sprites, self.shield_sprites, self.powerup_sprites), choice(list(self.enemy_sprites)), "Space Invaders 2/Images/shield.png")
 
@@ -364,7 +373,10 @@ class Game:
                         laser.kill()
                     pygame.time.set_timer(self.delete_laser_event, 0)
                     pygame.time.set_timer(self.warning_event, randint(10000,15000))
-                
+
+                if event.type == self.spawn_teleport_enemy and len(self.teleport_enemies) < 1:
+                    self.telep_enemy = TeleportEnemy((self.all_sprites, self.teleport_enemies))
+
                 if event.type == self.randomize_boss and self.boss.alive():
                     self.boss.randomize_direction()
 
