@@ -58,6 +58,27 @@ class Enemy(pygame.sprite.Sprite):
         self.boundaries()
         self.move(dt)
 
+class TeleportEnemy(Enemy):
+    def __init__(self, groups):
+        super().__init__(groups, spawnx=0)
+        self.rect = self.image.get_frect(midtop = (WINDOW_WIDTH / 2, 20))
+        self.last_teleport_time = pygame.time.get_ticks()
+        self.teleport_interval = 2000
+        self.times_teleported = 0
+        self.is_over = False
+
+    def move(self):
+        current_time = pygame.time.get_ticks()
+        if current_time - self.last_teleport_time  > self.teleport_interval:
+            self.rect.center = (randint(0, WINDOW_WIDTH), randint(0, WINDOW_HEIGHT))
+            self.last_teleport_time = current_time
+            self.times_teleported += 1
+        if self.times_teleported > 3:
+            self.is_over = True
+    
+    def update(self, dt):
+        self.move()
+
 class Bullet(pygame.sprite.Sprite):
     def __init__(self, groups, player):
         super().__init__(groups)
