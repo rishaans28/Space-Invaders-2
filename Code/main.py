@@ -25,9 +25,9 @@ class Game:
         
         self.last_boss_fight_score = 0
         self.is_boss_active = False
-        
+
         self.double_points = False
-        
+
         self.muted = True
 
         self.all_sprites = pygame.sprite.Group()
@@ -440,4 +440,4 @@ class Game:
         pygame.quit()
 
 if __name__ == "__main__":
-    Game().run()    
+    Game().run()
