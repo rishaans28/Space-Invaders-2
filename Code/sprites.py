@@ -62,7 +62,7 @@ class TeleportEnemy(Enemy):
     def __init__(self, groups):
         super().__init__(groups, spawnx=0)
         self.image = pygame.image.load("Space Invaders 2/Images/teleporter.png")
-        self.rect = self.image.get_frect(midtop = (WINDOW_WIDTH / 2, 20))
+        self.rect = self.image.get_frect(center = (randint(0, WINDOW_WIDTH - 40), randint(0, WINDOW_HEIGHT - 200)))
         self.last_teleport_time = pygame.time.get_ticks()
         self.teleport_interval = 2000
         self.times_teleported = 0
@@ -146,10 +146,21 @@ class Boss(pygame.sprite.Sprite):
     def __init__(self, groups):
         super().__init__(groups)
         self.image = pygame.image.load("Space Invaders 2/Images/boss.png")
-        self.rect = self.image.get_frect(midtop = (WINDOW_WIDTH/2, 0))
+        self.rect = self.image.get_frect(midbottom = (WINDOW_WIDTH/2, -100))
         self.speed = BOSS_MOVING_SPEED
         self.direction = pygame.Vector2(1,0)
         self.lives = 10
+        self.anim = True
+
+    def spawn_anim(self):
+        if self.rect.midbottom[1] < 450:
+            self.direction.x = 0
+            self.direction.y = 1
+            self.anim = True
+        else:
+            self.direction.x = choice([-1, 1])
+            self.direction.y = 0
+            self.anim = False
     
     def randomize_direction(self):
         self.direction.x *= -1
@@ -166,3 +177,5 @@ class Boss(pygame.sprite.Sprite):
     def update(self, dt):
         self.move(dt)
         self.boundaries()
+        if self.anim:
+            self.spawn_anim()
