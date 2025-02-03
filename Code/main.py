@@ -209,8 +209,8 @@ class Game:
 
     def display_game_over(self):
         if self.is_game_over:
-            font = pygame.font.Font("Oxanium-Bold.ttf", 100)
-            small_font = pygame.font.Font("Oxanium-Bold.ttf", 30)
+            font = pygame.font.Font("Fonts/Oxanium-Bold.ttf", 100)
+            small_font = pygame.font.Font("Fonts/Oxanium-Bold.ttf", 30)
             
             text_surf = font.render("GAME OVER", True, (255, 0, 0))
             text_rect = text_surf.get_frect(center = (WINDOW_WIDTH/2, WINDOW_HEIGHT/2))
