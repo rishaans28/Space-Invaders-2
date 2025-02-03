@@ -90,11 +90,11 @@ class Game:
         self.spawn_teleport_enemy = pygame.event.custom_type()
         pygame.time.set_timer(self.spawn_teleport_enemy, randint(15000, 20000))
 
-        self.music = pygame.mixer.Sound("Space Invaders 2/Audio/music.mp3")
+        self.music = pygame.mixer.Sound("Audio/music.mp3")
         self.music.play(loops=-1)
-        self.shoot_sound = pygame.mixer.Sound("Space Invaders 2/Audio/laser.wav")
-        self.impact_sound = pygame.mixer.Sound("Space Invaders 2/Audio/impact.ogg")
-        self.explosion_sound = pygame.mixer.Sound("Space Invaders 2/Audio/explosion.wav")
+        self.shoot_sound = pygame.mixer.Sound("Audio/laser.wav")
+        self.impact_sound = pygame.mixer.Sound("Audio/impact.ogg")
+        self.explosion_sound = pygame.mixer.Sound("Audio/explosion.wav")
 
     def input(self):
         recent_keys = pygame.key.get_just_pressed()
@@ -203,14 +203,14 @@ class Game:
 
     def game_over(self):
         if self.lives_remaining <= 0 and not self.is_game_over:
-            with open(join("Space Invaders 2", "Data", "score.txt"), "w") as score_file:
+            with open(join("Data", "score.txt"), "w") as score_file:
                 json.dump(self.highscore, score_file)
             self.is_game_over = True
 
     def display_game_over(self):
         if self.is_game_over:
-            font = pygame.font.Font("Fonts/Oxanium-Bold.ttf", 100)
-            small_font = pygame.font.Font("Fonts/Oxanium-Bold.ttf", 30)
+            font = pygame.font.Font("Oxanium-Bold.ttf", 100)
+            small_font = pygame.font.Font("Oxanium-Bold.ttf", 30)
             
             text_surf = font.render("GAME OVER", True, (255, 0, 0))
             text_rect = text_surf.get_frect(center = (WINDOW_WIDTH/2, WINDOW_HEIGHT/2))
@@ -241,7 +241,7 @@ class Game:
 
     def display_highscore(self):
         try:
-            with open(join("Space Invaders 2", "Data", "score.txt")) as score_file:
+            with open(join("Data", "score.txt")) as score_file:
                 self.highscore = json.load(score_file)
         except:
             self.highscore = 0
@@ -284,7 +284,7 @@ class Game:
         self.display_surface.blit(text_surf, text_rect)
 
     def display_lives(self):
-        lives_img = pygame.image.load("Space Invaders 2/Images/life.png")
+        lives_img = pygame.image.load("Images/life.png")
         lives_img_width = lives_img.get_width()
         total_width = self.lives_remaining * lives_img_width
 
@@ -306,7 +306,7 @@ class Game:
         self.display_surface.blit(score_text, score_rect)
 
     def display_volume(self):
-        surf = pygame.image.load("Space Invaders 2/Images/unmuted.png") if not self.muted else pygame.image.load("Space Invaders 2/Images/muted.png")
+        surf = pygame.image.load("Images/unmuted.png") if not self.muted else pygame.image.load("Images/muted.png")
         rect = surf.get_frect(topleft = (0,80))
         self.display_surface.blit(surf, rect)
 
@@ -325,22 +325,22 @@ class Game:
                     else EnemyBullet((self.all_sprites, self.enemy_bullet_sprites), self.boss, boss=True)
 
                 if event.type == self.heart_event and self.enemy_sprites and self.lives_remaining != 5:
-                    PowerupItem((self.all_sprites, self.heart_sprites, self.powerup_sprites), choice(list(self.enemy_sprites)), "Space Invaders 2/Images/heart.png")
+                    PowerupItem((self.all_sprites, self.heart_sprites, self.powerup_sprites), choice(list(self.enemy_sprites)), "Images/heart.png")
 
                 if event.type == self.shield_event and self.enemy_sprites:
-                    PowerupItem((self.all_sprites, self.shield_sprites, self.powerup_sprites), choice(list(self.enemy_sprites)), "Space Invaders 2/Images/shield.png")
+                    PowerupItem((self.all_sprites, self.shield_sprites, self.powerup_sprites), choice(list(self.enemy_sprites)), "Images/shield.png")
 
                 if event.type == self.speed_boost_event and self.enemy_sprites:
-                    PowerupItem((self.all_sprites, self.speed_boost_sprites, self.powerup_sprites), choice(list(self.enemy_sprites)), "Space Invaders 2/Images/speedboost.png")
+                    PowerupItem((self.all_sprites, self.speed_boost_sprites, self.powerup_sprites), choice(list(self.enemy_sprites)), "Images/speedboost.png")
                 
                 if event.type == self.slow_time_event and self.enemy_sprites:
-                    PowerupItem((self.all_sprites, self.slow_time_sprites, self.powerup_sprites), choice(list(self.enemy_sprites)), "Space Invaders 2/Images/spiral.png")
+                    PowerupItem((self.all_sprites, self.slow_time_sprites, self.powerup_sprites), choice(list(self.enemy_sprites)), "Images/spiral.png")
 
                 if event.type == self.rapid_fire_event and self.enemy_sprites:
-                    PowerupItem((self.all_sprites, self.rapid_fire_sprites, self.powerup_sprites), choice(list(self.enemy_sprites)), "Space Invaders 2/Images/lightning.png")
+                    PowerupItem((self.all_sprites, self.rapid_fire_sprites, self.powerup_sprites), choice(list(self.enemy_sprites)), "Images/lightning.png")
 
                 if event.type == self.double_points_event and self.enemy_sprites:
-                    PowerupItem((self.all_sprites, self.double_points_sprites, self.powerup_sprites), choice(list(self.enemy_sprites)), "Space Invaders 2/Images/doublepoints.png")
+                    PowerupItem((self.all_sprites, self.double_points_sprites, self.powerup_sprites), choice(list(self.enemy_sprites)), "Images/doublepoints.png")
 
                 if event.type == self.end_speed_boost:
                     self.player.speed = 550
