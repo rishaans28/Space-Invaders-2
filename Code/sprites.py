@@ -3,7 +3,7 @@ from settings import *
 class Player(pygame.sprite.Sprite):
     def __init__(self, groups):
         super().__init__(groups)
-        self.image = pygame.image.load("Space Invaders 2/Images/player.png").convert_alpha()
+        self.image = pygame.image.load("Images/player.png").convert_alpha()
         self.rect = self.image.get_frect(center = (WINDOW_WIDTH / 2, WINDOW_HEIGHT - 100))
         self.direction = pygame.Vector2()
         self.speed = PLAYER_SPEED
@@ -26,14 +26,14 @@ class Player(pygame.sprite.Sprite):
         self.boundaries()
         
         if self.invincible:
-            self.image = pygame.image.load("Space Invaders 2/Images/playerinvincible.png").convert_alpha()
+            self.image = pygame.image.load("Images/playerinvincible.png").convert_alpha()
         else:
-            self.image = pygame.image.load("Space Invaders 2/Images/player.png").convert_alpha()
+            self.image = pygame.image.load("Images/player.png").convert_alpha()
 
 class Enemy(pygame.sprite.Sprite):
     def __init__(self, groups, spawnx):
         super().__init__(groups)
-        self.image = pygame.image.load("Space Invaders 2/Images/enemy.png").convert_alpha()
+        self.image = pygame.image.load("Images/enemy.png").convert_alpha()
         self.rect = self.image.get_frect(midtop = (WINDOW_WIDTH / 2, 20))
         self.ychange = 100
         self.speed = ENEMY_SPEED
@@ -61,7 +61,7 @@ class Enemy(pygame.sprite.Sprite):
 class TeleportEnemy(Enemy):
     def __init__(self, groups):
         super().__init__(groups, spawnx=0)
-        self.image = pygame.image.load("Space Invaders 2/Images/teleporter.png")
+        self.image = pygame.image.load("Images/teleporter.png")
         self.rect = self.image.get_frect(center = (randint(0, WINDOW_WIDTH - 40), randint(0, WINDOW_HEIGHT - 200)))
         self.last_teleport_time = pygame.time.get_ticks()
         self.teleport_interval = 2000
@@ -83,7 +83,7 @@ class TeleportEnemy(Enemy):
 class Bullet(pygame.sprite.Sprite):
     def __init__(self, groups, player):
         super().__init__(groups)
-        self.image = pygame.image.load("Space Invaders 2/Images/bullet.png").convert_alpha()
+        self.image = pygame.image.load("Images/bullet.png").convert_alpha()
         self.player = player
         self.rect = self.image.get_frect(center = self.player.rect.midtop)
         self.direction = pygame.Vector2(0, -1)
@@ -99,7 +99,7 @@ class Bullet(pygame.sprite.Sprite):
 class EnemyBullet(pygame.sprite.Sprite):
     def __init__(self, groups, enemy, boss):
         super().__init__(groups)
-        self.original_img = pygame.image.load("Space Invaders 2/Images/bullet.png").convert_alpha()
+        self.original_img = pygame.image.load("Images/bullet.png").convert_alpha()
         self.image = pygame.transform.rotozoom(self.original_img, 180, 1)
         self.rect = self.image.get_frect(center = enemy.rect.center) if not boss else self.image.get_frect(midtop = (randint(0, WINDOW_WIDTH), 0))
         self.speed = ENEMY_BULLET_MOVING_SPEED
@@ -130,7 +130,7 @@ class PowerupItem(pygame.sprite.Sprite):
 class DangerSign(pygame.sprite.Sprite):
     def __init__(self, groups, pos):
         super().__init__(groups)
-        self.image = pygame.image.load("Space Invaders 2/Images/danger.png").convert_alpha()
+        self.image = pygame.image.load("Images/danger.png").convert_alpha()
         self.pos = (pos[0], pos[1])
         self.rect = self.image.get_frect(center = self.pos)
 
@@ -145,7 +145,7 @@ class Laser(pygame.sprite.Sprite):
 class Boss(pygame.sprite.Sprite):
     def __init__(self, groups):
         super().__init__(groups)
-        self.image = pygame.image.load("Space Invaders 2/Images/boss.png")
+        self.image = pygame.image.load("Images/boss.png")
         self.rect = self.image.get_frect(midbottom = (WINDOW_WIDTH/2, -100))
         self.speed = BOSS_MOVING_SPEED
         self.direction = pygame.Vector2(1,0)
