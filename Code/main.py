@@ -358,13 +358,18 @@ class Game:
                     self.double_points = False
 
                 if event.type == self.warning_event:
+                    self.is_second_one = choice([True, False])
                     self.danger_sign = DangerSign(self.all_sprites, (randint(40, WINDOW_WIDTH-40), randint(40, WINDOW_HEIGHT-40)))
+                    self.danger_sign2 = DangerSign(self.all_sprites, (randint(40, WINDOW_WIDTH-40), randint(40, WINDOW_HEIGHT-40))) if self.is_second_one else None
                     pygame.time.set_timer(self.laser_event, 1000)
 
                 if event.type == self.laser_event:
                     if self.danger_sign:
                         self.danger_sign.kill()
+                    if self.danger_sign2:
+                        self.danger_sign2.kill()
                     Laser((self.all_sprites, self.laser_sprites), self.danger_sign)
+                    Laser((self.all_sprites, self.laser_sprites), self.danger_sign2) if self.danger_sign2 else None
                     pygame.time.set_timer(self.delete_laser_event, 2000)
                     pygame.time.set_timer(self.laser_event, 0)
 
