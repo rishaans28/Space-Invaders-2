@@ -1,7 +1,5 @@
 from settings import *
 from sprites import *
-from random import choice
-from os.path import join
 import json
 
 class Game:
