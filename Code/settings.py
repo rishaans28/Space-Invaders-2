@@ -1,5 +1,6 @@
 import pygame
 from random import randint, choice
+from os.path import join
 
 WINDOW_WIDTH, WINDOW_HEIGHT = 1350, 800
 ENEMY_SPEED = 500
