@@ -90,11 +90,11 @@ class Game:
         self.spawn_teleport_enemy = pygame.event.custom_type()
         pygame.time.set_timer(self.spawn_teleport_enemy, randint(15000, 20000))
 
-        self.music = pygame.mixer.Sound("Audio/music.mp3")
+        self.music = pygame.mixer.Sound(join("Audio", "music.mp3"))
         self.music.play(loops=-1)
-        self.shoot_sound = pygame.mixer.Sound("Audio/laser.wav")
-        self.impact_sound = pygame.mixer.Sound("Audio/impact.ogg")
-        self.explosion_sound = pygame.mixer.Sound("Audio/explosion.wav")
+        self.shoot_sound = pygame.mixer.Sound(join("Audio", "laser.wav"))
+        self.impact_sound = pygame.mixer.Sound(join("Audio", "impact.ogg"))
+        self.explosion_sound = pygame.mixer.Sound(join("Audio", "explosion.wav"))
 
     def input(self):
         recent_keys = pygame.key.get_just_pressed()
@@ -110,16 +110,16 @@ class Game:
                 sprite.kill()
                 func()
 
-    def screen_shake(self):
+    def screen_shake(self, dt):
         if self.shake_duration > 0:
-            self.shake_intensity = max(self.shake_intensity-1, 0)
+            self.shake_intensity = max(self.shake_intensity-(50 * dt), 0)
 
-            offset_x = randint(-self.shake_intensity, self.shake_intensity)
-            offset_y = randint(-self.shake_intensity, self.shake_intensity)
+            offset_x = randint(-int(self.shake_intensity), int(self.shake_intensity))
+            offset_y = randint(-int(self.shake_intensity), int(self.shake_intensity))
 
             self.shake_offset = (offset_x, offset_y)
 
-            self.shake_duration -= self.clock.get_time()
+            self.shake_duration -= dt
         else:
             self.shake_offset = (0, 0)
 
@@ -209,8 +209,8 @@ class Game:
 
     def display_game_over(self):
         if self.is_game_over:
-            font = pygame.font.Font("Fonts/Oxanium-Bold.ttf", 100)
-            small_font = pygame.font.Font("Fonts/Oxanium-Bold.ttf", 30)
+            font = pygame.font.Font(join("Fonts", "Oxanium-Bold.ttf"), 100)
+            small_font = pygame.font.Font(join("Fonts", "Oxanium-Bold.ttf"), 30)
             
             text_surf = font.render("GAME OVER", True, (255, 0, 0))
             text_rect = text_surf.get_frect(center = (WINDOW_WIDTH/2, WINDOW_HEIGHT/2))
@@ -245,16 +245,16 @@ class Game:
                 self.highscore = json.load(score_file)
         except:
             self.highscore = 0
-            
+
         if self.enemies_killed > int(self.highscore):
             self.highscore = self.enemies_killed
 
         if not self.is_game_over:
-            font = pygame.font.Font("Fonts/Oxanium-Bold.ttf", 30)
+            font = pygame.font.Font(join("Fonts", "Oxanium-Bold.ttf"), 30)
             score_text = font.render(f"HIGHSCORE: {self.highscore}", True, (255,255,255))
             score_rect = score_text.get_frect(topleft = (0,30))
         else:
-            font = pygame.font.Font("Fonts/Oxanium-Bold.ttf", 50)
+            font = pygame.font.Font(join("Fonts", "Oxanium-Bold.ttf"), 50)
             score_text = font.render(f"HIGHSCORE: {self.highscore}", True, (255,255,255))
             score_rect = score_text.get_frect(center = (WINDOW_WIDTH/2, WINDOW_HEIGHT/2 + 130))
         self.display_surface.blit(score_text, score_rect)
@@ -278,13 +278,18 @@ class Game:
                 self.player.can_shoot = True
 
     def display_fps(self):
-        font = pygame.font.Font("Fonts/Oxanium-Bold.ttf", 30)
-        text_surf = font.render("FPS: " + str(round(self.clock.get_fps(), 2)), True, (255, 255, 255))
+        font = pygame.font.Font(join("Fonts", "Oxanium-Bold.ttf"), 30)
+        if self.clock.get_fps() <= 30:
+            text_surf = font.render("FPS: " + str(round(self.clock.get_fps(), 2)), True, (255, 0, 0))
+        elif self.clock.get_fps() <= 60:
+            text_surf = font.render("FPS: " + str(round(self.clock.get_fps(), 2)), True, (255, 255, 0))
+        else:
+            text_surf = font.render("FPS: " + str(round(self.clock.get_fps(), 2)), True, (0, 255, 0))
         text_rect = text_surf.get_frect(topleft = (0, 60))
         self.display_surface.blit(text_surf, text_rect)
 
     def display_lives(self):
-        lives_img = pygame.image.load("Images/life.png")
+        lives_img = pygame.image.load(join("Images", "life.png"))
         lives_img_width = lives_img.get_width()
         total_width = self.lives_remaining * lives_img_width
 
@@ -296,23 +301,23 @@ class Game:
 
     def display_score(self):
         if not self.is_game_over:
-            font = pygame.font.Font("Fonts/Oxanium-Bold.ttf", 30)
+            font = pygame.font.Font(join("Fonts", "Oxanium-Bold.ttf"), 30)
             score_text = font.render(f"SCORE: {self.enemies_killed}", True, (255,255,255))
             score_rect = score_text.get_frect(topleft = (0,0))
         else:
-            font = pygame.font.Font("Fonts/Oxanium-Bold.ttf", 50)
+            font = pygame.font.Font(join("Fonts", "Oxanium-Bold.ttf"), 50)
             score_text = font.render(f"SCORE: {self.enemies_killed}", True, (255,255,255))
             score_rect = score_text.get_frect(center = (WINDOW_WIDTH/2, WINDOW_HEIGHT/2 + 75))
         self.display_surface.blit(score_text, score_rect)
 
     def display_volume(self):
-        surf = pygame.image.load("Images/unmuted.png") if not self.muted else pygame.image.load("Images/muted.png")
+        surf = pygame.image.load(join("Images", "unmuted.png")) if not self.muted else pygame.image.load(join("Images", "muted.png"))
         rect = surf.get_frect(topleft = (0,80))
         self.display_surface.blit(surf, rect)
 
     def run(self):
         while self.running:
-            dt = self.clock.tick() / 1000
+            dt = self.clock.tick(0) / 1000
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     self.running = False
@@ -325,22 +330,22 @@ class Game:
                     else EnemyBullet((self.all_sprites, self.enemy_bullet_sprites), self.boss, boss=True)
 
                 if event.type == self.heart_event and self.enemy_sprites and self.lives_remaining != 5:
-                    PowerupItem((self.all_sprites, self.heart_sprites, self.powerup_sprites), choice(list(self.enemy_sprites)), "Images/heart.png")
+                    PowerupItem((self.all_sprites, self.heart_sprites, self.powerup_sprites), choice(list(self.enemy_sprites)), join("Images", "heart.png"))
 
                 if event.type == self.shield_event and self.enemy_sprites:
-                    PowerupItem((self.all_sprites, self.shield_sprites, self.powerup_sprites), choice(list(self.enemy_sprites)), "Images/shield.png")
+                    PowerupItem((self.all_sprites, self.shield_sprites, self.powerup_sprites), choice(list(self.enemy_sprites)), join("Images", "shield.png"))
 
                 if event.type == self.speed_boost_event and self.enemy_sprites:
-                    PowerupItem((self.all_sprites, self.speed_boost_sprites, self.powerup_sprites), choice(list(self.enemy_sprites)), "Images/speedboost.png")
+                    PowerupItem((self.all_sprites, self.speed_boost_sprites, self.powerup_sprites), choice(list(self.enemy_sprites)), join("Images", "speedboost.png"))
                 
                 if event.type == self.slow_time_event and self.enemy_sprites:
-                    PowerupItem((self.all_sprites, self.slow_time_sprites, self.powerup_sprites), choice(list(self.enemy_sprites)), "Images/spiral.png")
+                    PowerupItem((self.all_sprites, self.slow_time_sprites, self.powerup_sprites), choice(list(self.enemy_sprites)), join("Images", "spiral.png"))
 
                 if event.type == self.rapid_fire_event and self.enemy_sprites:
-                    PowerupItem((self.all_sprites, self.rapid_fire_sprites, self.powerup_sprites), choice(list(self.enemy_sprites)), "Images/lightning.png")
+                    PowerupItem((self.all_sprites, self.rapid_fire_sprites, self.powerup_sprites), choice(list(self.enemy_sprites)), join("Images", "lightning.png"))
 
                 if event.type == self.double_points_event and self.enemy_sprites:
-                    PowerupItem((self.all_sprites, self.double_points_sprites, self.powerup_sprites), choice(list(self.enemy_sprites)), "Images/doublepoints.png")
+                    PowerupItem((self.all_sprites, self.double_points_sprites, self.powerup_sprites), choice(list(self.enemy_sprites)), join("Images", "doublepoints.png"))
 
                 if event.type == self.end_speed_boost:
                     self.player.speed = 550
@@ -401,7 +406,7 @@ class Game:
                 self.shoot_sound.set_volume(0.5)
                 self.impact_sound.set_volume(2)
                 self.explosion_sound.set_volume(1)
-            
+
             if self.slowed:
                 for enemy in self.enemy_sprites:
                     enemy.speed = 250
@@ -420,7 +425,7 @@ class Game:
             self.player.cooldown_duration = 150 if self.rapid_fire else 500
 
             if not self.is_game_over:
-                self.screen_shake()
+                self.screen_shake(dt)
                 offset_x, offset_y = self.shake_offset
                 for sprite in self.all_sprites:
                     adjusted_rect = sprite.rect.move(offset_x, offset_y)
