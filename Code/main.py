@@ -1,5 +1,6 @@
 from settings import *
 from sprites import *
+from custom_timer import Timer
 import json
 
 class Game:
@@ -10,6 +11,7 @@ class Game:
         self.clock = pygame.time.Clock()
         self.running = True
         self.is_game_over = False
+        self.timers = []
         
         self.enemies_killed = 0
         self.last_hit_time = 0
@@ -27,6 +29,9 @@ class Game:
         self.double_points = False
 
         self.muted = True
+        
+        self.flash_heart = False
+        self.flash_timer_in_arr = False
 
         self.all_sprites = pygame.sprite.Group()
         self.enemy_sprites = pygame.sprite.Group()
@@ -182,7 +187,7 @@ class Game:
             if enemy.rect.top > 570:
                 enemy.kill()
                 if not self.player.invincible:
-                    self.lives_remaining -= 1
+                    self.minus_life()
 
         if hasattr(self, "boss") and self.boss.alive():
             for bullet in self.bullet_sprites:
@@ -198,6 +203,9 @@ class Game:
                         self.explosion_sound.play()
                         pygame.time.set_timer(self.enemy_bullet_event, randint(300,550))
             pygame.time.set_timer(self.enemy_event, randint(1000,2000))
+
+    def flash_life(self):
+        self.flash_heart = not self.flash_heart
 
     def game_over(self):
         if self.lives_remaining <= 0 and not self.is_game_over:
@@ -288,13 +296,17 @@ class Game:
 
     def display_lives(self):
         lives_img = pygame.image.load(join("Images", "life.png"))
+        lives_img_white = pygame.image.load(join("Images", "whitecircle.png"))
         lives_img_width = lives_img.get_width()
         total_width = self.lives_remaining * lives_img_width
 
         start_x = (WINDOW_WIDTH - total_width) / 2
         x = start_x
         for _ in range(self.lives_remaining):
-            self.display_surface.blit(lives_img, (x,10))
+            if self.flash_heart:
+                self.display_surface.blit(lives_img_white, (x,10))
+            else:
+                self.display_surface.blit(lives_img, (x,10))
             x += lives_img_width + 10
 
     def display_score(self):
@@ -422,6 +434,10 @@ class Game:
 
             self.player.cooldown_duration = 150 if self.rapid_fire else 500
 
+            if self.lives_remaining == 1 and not self.flash_timer_in_arr:
+                self.flash_timer_in_arr = True
+                self.timers.append(Timer(500, lambda: self.flash_life(), True, True))
+
             if not self.is_game_over:
                 self.screen_shake(dt)
                 offset_x, offset_y = self.shake_offset
@@ -439,11 +455,12 @@ class Game:
                 self.display_volume()
                 self.game_over()
                 self.boss_fight()
+                for timer in self.timers:
+                    timer.update()
             else:
                 self.display_game_over()
             self.display_highscore()
             self.display_score()
-
             pygame.display.update()
         pygame.quit()
 
