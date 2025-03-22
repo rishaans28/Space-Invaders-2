@@ -32,6 +32,7 @@ class Game:
         
         self.flash_heart = False
         self.flash_timer_in_arr = False
+        self.life_is_white = False
 
         self.all_sprites = pygame.sprite.Group()
         self.enemy_sprites = pygame.sprite.Group()
@@ -49,6 +50,7 @@ class Game:
 
         self.player = Player(self.all_sprites)
         self.lives_remaining = 3
+        self.at_one_life = False
 
         for _ in range(5):
             Enemy((self.all_sprites, self.enemy_sprites), randint(0, WINDOW_WIDTH))
@@ -98,6 +100,7 @@ class Game:
         self.shoot_sound = pygame.mixer.Sound(join("Audio", "laser.wav"))
         self.impact_sound = pygame.mixer.Sound(join("Audio", "impact.ogg"))
         self.explosion_sound = pygame.mixer.Sound(join("Audio", "explosion.wav"))
+        self.beep_sound = pygame.mixer.Sound(join("Audio", "beep.wav"))
 
     def input(self):
         recent_keys = pygame.key.get_just_pressed()
@@ -136,6 +139,10 @@ class Game:
 
     def gain_life(self):
         self.lives_remaining += 1
+        if self.lives_remaining == 2:
+            self.timers = []
+            self.flash_timer_in_arr = False
+            self.beep_sound.stop()
 
     def minus_life(self):
         current_time = pygame.time.get_ticks()
@@ -215,6 +222,7 @@ class Game:
 
     def display_game_over(self):
         if self.is_game_over:
+            self.music.stop()
             font = pygame.font.Font(join("Fonts", "Oxanium-Bold.ttf"), 100)
             small_font = pygame.font.Font(join("Fonts", "Oxanium-Bold.ttf"), 30)
             
@@ -301,12 +309,16 @@ class Game:
         total_width = self.lives_remaining * lives_img_width
 
         start_x = (WINDOW_WIDTH - total_width) / 2
-        x = start_x
+        x = start_x 
         for _ in range(self.lives_remaining):
             if self.flash_heart:
+                self.life_is_white = True
                 self.display_surface.blit(lives_img_white, (x,10))
             else:
-                self.display_surface.blit(lives_img, (x,10))
+                self.life_is_white = False
+                self.display_surface.blit(lives_img, (x, 10))
+            if not self.at_one_life and self.life_is_white:
+                self.display_surface.blit(lives_img, (x, 10))
             x += lives_img_width + 10
 
     def display_score(self):
@@ -411,11 +423,13 @@ class Game:
                 self.shoot_sound.set_volume(0)
                 self.impact_sound.set_volume(0)
                 self.explosion_sound.set_volume(0)
+                self.beep_sound.set_volume(0)
             else:
                 self.music.set_volume(1)
                 self.shoot_sound.set_volume(0.5)
                 self.impact_sound.set_volume(2)
                 self.explosion_sound.set_volume(1)
+                self.beep_sound.set_volume(0.85)
 
             if self.slowed:
                 for enemy in self.enemy_sprites:
@@ -435,8 +449,13 @@ class Game:
             self.player.cooldown_duration = 150 if self.rapid_fire else 500
 
             if self.lives_remaining == 1 and not self.flash_timer_in_arr:
+                self.at_one_life = True
                 self.flash_timer_in_arr = True
                 self.timers.append(Timer(500, lambda: self.flash_life(), True, True))
+                self.beep_sound.play()
+            
+            if self.lives_remaining > 1:
+                self.at_one_life = False
 
             if not self.is_game_over:
                 self.screen_shake(dt)
