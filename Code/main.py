@@ -122,6 +122,14 @@ class Game:
         self.impact_sound = pygame.mixer.Sound(join("Audio", "impact.ogg"))
         self.explosion_sound = pygame.mixer.Sound(join("Audio", "explosion.wav"))
         self.beep_sound = pygame.mixer.Sound(join("Audio", "beep.wav"))
+        
+        self.all_sounds = [
+            self.music,
+            self.shoot_sound,
+            self.impact_sound,
+            self.explosion_sound,
+            self.beep_sound
+        ]
 
     def input(self):
         recent_keys = pygame.key.get_just_pressed()
@@ -171,6 +179,7 @@ class Game:
             if current_time - self.last_hit_time > 10:
                 self.last_hit_time = pygame.time.get_ticks()
                 self.lives_remaining -= 1
+                self.impact_sound.play()
                 self.shake_duration = 300
                 self.shake_intensity = 50
 
@@ -243,7 +252,6 @@ class Game:
 
     def display_game_over(self):
         if self.is_game_over:
-            self.music.stop()
             font = pygame.font.Font(join("Fonts", "Oxanium-Bold.ttf"), 100)
             small_font = pygame.font.Font(join("Fonts", "Oxanium-Bold.ttf"), 30)
             
@@ -258,6 +266,8 @@ class Game:
             
             for group in self.all_groups:
                 group.empty()
+            for sound in self.all_sounds:
+                sound.stop()
 
             keys = pygame.key.get_pressed()
             if keys[pygame.K_r]:
