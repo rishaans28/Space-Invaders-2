@@ -487,7 +487,6 @@ class Game:
                     self.display_surface.blit(sprite.image, adjusted_rect)
 
                 self.all_sprites.update(dt)
-                self.all_sprites.draw(self.display_surface)
                 self.display_fps()
                 self.input()
                 self.check_collisions()
