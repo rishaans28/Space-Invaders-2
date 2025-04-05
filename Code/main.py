@@ -47,6 +47,27 @@ class Game:
         self.powerup_sprites = pygame.sprite.Group()
         self.double_points_sprites = pygame.sprite.Group()
         self.teleport_enemies = pygame.sprite.Group()
+        self.star_sprites = pygame.sprite.Group()
+        
+        self.all_groups = [
+            self.all_sprites,
+            self.enemy_sprites,
+            self.bullet_sprites,
+            self.enemy_bullet_sprites,
+            self.heart_sprites,
+            self.laser_sprites,
+            self.shield_sprites,
+            self.speed_boost_sprites,
+            self.slow_time_sprites,
+            self.rapid_fire_sprites,
+            self.powerup_sprites,
+            self.double_points_sprites,
+            self.teleport_enemies,
+            self.star_sprites
+        ]
+
+        for _ in range(randint(20,30)):
+            Star(self.all_sprites, pygame.image.load(join("Images", "star.png")).convert_alpha())
 
         self.player = Player(self.all_sprites)
         self.lives_remaining = 3
@@ -235,18 +256,9 @@ class Game:
             self.display_surface.blit(text_surf, text_rect)
             self.display_surface.blit(restart_text_surf, restart_text_rect)
             
-            self.all_sprites.empty()
-            self.enemy_sprites.empty()
-            self.bullet_sprites.empty()
-            self.enemy_bullet_sprites.empty()
-            self.heart_sprites.empty()
-            self.laser_sprites.empty()
-            self.shield_sprites.empty()
-            self.speed_boost_sprites.empty()
-            self.slow_time_sprites.empty()
-            self.rapid_fire_sprites.empty()
-            self.powerup_sprites.empty()
-            
+            for group in self.all_groups:
+                group.empty()
+
             keys = pygame.key.get_pressed()
             if keys[pygame.K_r]:
                 self.__init__()
