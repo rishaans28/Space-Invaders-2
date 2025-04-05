@@ -179,3 +179,13 @@ class Boss(pygame.sprite.Sprite):
         self.boundaries()
         if self.anim:
             self.spawn_anim()
+
+class Star(pygame.sprite.Sprite):
+    def __init__(self, groups, surf):
+        super().__init__(groups)
+        self.image = surf
+        self.size = randint(10, 50)
+        self.image = pygame.transform.scale(self.image, (self.size, self.size))
+        self.rotation = randint(-20,20)
+        self.image = pygame.transform.rotate(self.image, self.rotation)
+        self.rect = self.image.get_frect(center = (randint(0, WINDOW_WIDTH), randint(0, WINDOW_HEIGHT)))
