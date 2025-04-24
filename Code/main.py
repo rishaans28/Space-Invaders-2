@@ -33,6 +33,8 @@ class Game:
         self.flash_heart = False
         self.flash_timer_in_arr = False
         self.life_is_white = False
+        
+        self.explosion_frames = [pygame.image.load(join("Images", "Explosions", f"{i}.png")).convert_alpha() for i in range(21)]
 
         self.all_sprites = pygame.sprite.Group()
         self.enemy_sprites = pygame.sprite.Group()
@@ -218,6 +220,7 @@ class Game:
                 or pygame.sprite.spritecollide(bullet, self.teleport_enemies, True, pygame.sprite.collide_mask)
             if enemies_hit:
                 bullet.kill()
+                Explosion(self.all_sprites, self.explosion_frames, (bullet.rect.center[0] + 20, bullet.rect.center[1] - 20))
             self.enemies_killed += len(enemies_hit) * 2 if self.double_points else len(enemies_hit)
 
         for enemy in self.enemy_sprites:
