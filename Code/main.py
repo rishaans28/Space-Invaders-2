@@ -220,7 +220,8 @@ class Game:
                 or pygame.sprite.spritecollide(bullet, self.teleport_enemies, True, pygame.sprite.collide_mask)
             if enemies_hit:
                 bullet.kill()
-                Explosion(self.all_sprites, self.explosion_frames, (bullet.rect.center[0] + 20, bullet.rect.center[1] - 20))
+                for enemy in enemies_hit:
+                    Explosion(self.all_sprites, self.explosion_frames, enemy.rect.center)
             self.enemies_killed += len(enemies_hit) * 2 if self.double_points else len(enemies_hit)
 
         for enemy in self.enemy_sprites:
