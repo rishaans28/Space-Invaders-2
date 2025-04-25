@@ -15,6 +15,9 @@ class Game:
         
         self.enemies_killed = 0
         self.last_hit_time = 0
+        self.is_already_new_highscore = False
+        self.new_highscore_time = None
+        self.new_highscore_duration = 3500
         
         self.slowed = False
         self.rapid_fire = False
@@ -250,6 +253,8 @@ class Game:
 
     def game_over(self):
         if self.lives_remaining <= 0 and not self.is_game_over:
+            if self.enemies_killed > int(self.highscore):
+                self.highscore = self.enemies_killed
             with open(join("Data", "score.txt"), "w") as score_file:
                 json.dump(self.highscore, score_file)
             self.is_game_over = True
@@ -286,8 +291,16 @@ class Game:
         except:
             self.highscore = 0
 
-        if self.enemies_killed > int(self.highscore):
+        if self.enemies_killed > int(self.highscore) and not self.is_already_new_highscore:
+            self.new_highscore_time = pygame.time.get_ticks()
             self.highscore = self.enemies_killed
+            self.is_already_new_highscore = True
+
+        if self.new_highscore_time and pygame.time.get_ticks() - self.new_highscore_time < self.new_highscore_duration:
+            font_ = pygame.font.Font(join("Fonts", "Oxanium-Bold.ttf"), 50)
+            new_highscore_text = font_.render("NEW HIGHSCORE!", True, (255, 255, 0))
+            new_highscore_rect = new_highscore_text.get_frect(topright = (WINDOW_WIDTH-20, 20))
+            self.display_surface.blit(new_highscore_text, new_highscore_rect)
 
         if not self.is_game_over:
             font = pygame.font.Font(join("Fonts", "Oxanium-Bold.ttf"), 30)
