@@ -90,8 +90,6 @@ class Bullet(pygame.sprite.Sprite):
 
     def move(self, dt):
         self.rect.centery -= BULLET_SPEED * dt
-        if self.rect.bottom <= 0:
-            self.kill()
 
     def update(self, dt):
         self.move(dt)
