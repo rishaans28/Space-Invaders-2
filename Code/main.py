@@ -37,6 +37,10 @@ class Game:
         self.flash_timer_in_arr = False
         self.life_is_white = False
         
+        self.shots_hit = 0
+        self.shots_missed = 0
+        self.accuracy = 0
+        
         self.explosion_frames = [pygame.image.load(join("Images", "Explosions", f"{i}.png")).convert_alpha() for i in range(21)]
 
         self.all_sprites = pygame.sprite.Group()
@@ -226,6 +230,7 @@ class Game:
                 for enemy in enemies_hit:
                     Explosion(self.all_sprites, self.explosion_frames, enemy.rect.center)
             self.enemies_killed += len(enemies_hit) * 2 if self.double_points else len(enemies_hit)
+            self.shots_hit += len(enemies_hit)
 
         for enemy in self.enemy_sprites:
             if enemy.rect.top > 570:
@@ -268,10 +273,15 @@ class Game:
             text_rect = text_surf.get_frect(center = (WINDOW_WIDTH/2, WINDOW_HEIGHT/2))
             
             restart_text_surf = small_font.render("R to restart, Q to quit", True, (0,0,255))
-            restart_text_rect = restart_text_surf.get_frect(center = (WINDOW_WIDTH/2, WINDOW_HEIGHT/2 + 185))
-            
+            restart_text_rect = restart_text_surf.get_frect(center = (WINDOW_WIDTH/2, WINDOW_HEIGHT/2 + 240))
+
             self.display_surface.blit(text_surf, text_rect)
             self.display_surface.blit(restart_text_surf, restart_text_rect)
+            
+            if self.shots_missed + self.shots_hit > 0:
+                self.accuracy = self.shots_hit / (self.shots_hit + self.shots_missed) * 100
+            else:
+                self.accuracy = 0
             
             for group in self.all_groups:
                 group.empty()
@@ -311,6 +321,12 @@ class Game:
             score_text = font.render(f"HIGHSCORE: {self.highscore}", True, (255,255,255))
             score_rect = score_text.get_frect(center = (WINDOW_WIDTH/2, WINDOW_HEIGHT/2 + 130))
         self.display_surface.blit(score_text, score_rect)
+
+    def display_accuracy(self):
+        font = pygame.font.Font(join("Fonts", "Oxanium-Bold.ttf"), 50)
+        accuracy_text_surf = font.render(f"ACCURACY: {self.accuracy:.2f}%", True, (255, 255, 255))
+        accuracy_text_rect = accuracy_text_surf.get_frect(center = (WINDOW_WIDTH/2, WINDOW_HEIGHT/2 + 190))
+        self.display_surface.blit(accuracy_text_surf, accuracy_text_rect)
 
     def boss_fight(self):
         if self.enemies_killed % 20 == 0 and self.enemies_killed != 0 and self.enemies_killed != self.last_boss_fight_score or \
@@ -495,6 +511,11 @@ class Game:
             
             if self.lives_remaining > 1:
                 self.at_one_life = False
+            
+            for bullet in self.bullet_sprites:
+                if bullet.rect.bottom <= 0:
+                    bullet.kill()
+                    self.shots_missed += 1
 
             if not self.is_game_over:
                 self.screen_shake(dt)
@@ -516,6 +537,7 @@ class Game:
                     timer.update()
             else:
                 self.display_game_over()
+                self.display_accuracy()
             self.display_highscore()
             self.display_score()
             pygame.display.update()
