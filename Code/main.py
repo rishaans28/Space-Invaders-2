@@ -241,6 +241,7 @@ class Game:
         if hasattr(self, "boss") and self.boss.alive():
             for bullet in self.bullet_sprites:
                 if pygame.sprite.collide_mask(bullet, self.boss):
+                    self.shots_hit += 1
                     bullet.kill()
                     self.boss.lives -= 1
                     if self.boss.lives <= 0:
