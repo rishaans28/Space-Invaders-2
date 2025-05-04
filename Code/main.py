@@ -12,6 +12,8 @@ class Game:
         self.running = True
         self.is_game_over = False
         self.timers = []
+
+        self.elapsed_time = None
         
         self.enemies_killed = 0
         self.last_hit_time = 0
@@ -264,6 +266,7 @@ class Game:
             with open(join("Data", "score.txt"), "w") as score_file:
                 json.dump(self.highscore, score_file)
             self.is_game_over = True
+            self.elapsed_time = pygame.time.get_ticks() / 1000
 
     def display_game_over(self):
         if self.is_game_over:
@@ -271,10 +274,10 @@ class Game:
             small_font = pygame.font.Font(join("Fonts", "Oxanium-Bold.ttf"), 30)
             
             text_surf = font.render("GAME OVER", True, (255, 0, 0))
-            text_rect = text_surf.get_frect(center = (WINDOW_WIDTH/2, WINDOW_HEIGHT/2))
+            text_rect = text_surf.get_frect(center = (WINDOW_WIDTH/2, (WINDOW_HEIGHT/2) - 40))
             
             restart_text_surf = small_font.render("R to restart, Q to quit", True, (0,0,255))
-            restart_text_rect = restart_text_surf.get_frect(center = (WINDOW_WIDTH/2, WINDOW_HEIGHT/2 + 240))
+            restart_text_rect = restart_text_surf.get_frect(center = (WINDOW_WIDTH/2, WINDOW_HEIGHT/2 + 250))
 
             self.display_surface.blit(text_surf, text_rect)
             self.display_surface.blit(restart_text_surf, restart_text_rect)
@@ -320,14 +323,20 @@ class Game:
         else:
             font = pygame.font.Font(join("Fonts", "Oxanium-Bold.ttf"), 50)
             score_text = font.render(f"HIGHSCORE: {self.highscore}", True, (255,255,255))
-            score_rect = score_text.get_frect(center = (WINDOW_WIDTH/2, WINDOW_HEIGHT/2 + 130))
+            score_rect = score_text.get_frect(center = (WINDOW_WIDTH/2, WINDOW_HEIGHT/2 + 100))
         self.display_surface.blit(score_text, score_rect)
 
     def display_accuracy(self):
         font = pygame.font.Font(join("Fonts", "Oxanium-Bold.ttf"), 50)
         accuracy_text_surf = font.render(f"ACCURACY: {self.accuracy:.2f}%", True, (255, 255, 255))
-        accuracy_text_rect = accuracy_text_surf.get_frect(center = (WINDOW_WIDTH/2, WINDOW_HEIGHT/2 + 190))
+        accuracy_text_rect = accuracy_text_surf.get_frect(center = (WINDOW_WIDTH/2, WINDOW_HEIGHT/2 + 150))
         self.display_surface.blit(accuracy_text_surf, accuracy_text_rect)
+
+    def display_time_survived(self):
+        font = pygame.font.Font(join("Fonts", "Oxanium-Bold.ttf"), 50)
+        time_text_surf = font.render(f"TIME SURVIVED: {self.elapsed_time}s", True, (255, 255, 255))
+        time_text_rect = time_text_surf.get_frect(center = (WINDOW_WIDTH/2, WINDOW_HEIGHT/2 + 200))
+        self.display_surface.blit(time_text_surf, time_text_rect)
 
     def boss_fight(self):
         if self.enemies_killed % 20 == 0 and self.enemies_killed != 0 and self.enemies_killed != self.last_boss_fight_score or \
@@ -385,7 +394,7 @@ class Game:
         else:
             font = pygame.font.Font(join("Fonts", "Oxanium-Bold.ttf"), 50)
             score_text = font.render(f"SCORE: {self.enemies_killed}", True, (255,255,255))
-            score_rect = score_text.get_frect(center = (WINDOW_WIDTH/2, WINDOW_HEIGHT/2 + 75))
+            score_rect = score_text.get_frect(center = (WINDOW_WIDTH/2, WINDOW_HEIGHT/2 + 50))
         self.display_surface.blit(score_text, score_rect)
 
     def display_volume(self):
@@ -539,6 +548,7 @@ class Game:
             else:
                 self.display_game_over()
                 self.display_accuracy()
+                self.display_time_survived()
             self.display_highscore()
             self.display_score()
             pygame.display.update()
