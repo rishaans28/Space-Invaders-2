@@ -22,6 +22,7 @@ class Game:
         self.new_highscore_duration = 3500
         
         self.slowed = False
+        self.frozen = False
         self.rapid_fire = False
         
         self.shake_duration = 0
@@ -59,6 +60,7 @@ class Game:
         self.double_points_sprites = pygame.sprite.Group()
         self.teleport_enemies = pygame.sprite.Group()
         self.star_sprites = pygame.sprite.Group()
+        self.freeze_time_sprites = pygame.sprite.Group()
         
         self.all_groups = [
             self.all_sprites,
@@ -74,7 +76,8 @@ class Game:
             self.powerup_sprites,
             self.double_points_sprites,
             self.teleport_enemies,
-            self.star_sprites
+            self.star_sprites,
+            self.freeze_time_sprites
         ]
 
         for _ in range(randint(20,30)):
@@ -119,6 +122,9 @@ class Game:
         pygame.time.set_timer(self.double_points_event, randint(15000,17000))
         self.end_double_points = pygame.event.custom_type()
 
+        self.freeze_time_event = pygame.event.custom_type()
+        pygame.time.set_timer(self.freeze_time_event, randint(15000,20000))
+        
         self.laser_event = pygame.event.custom_type()
         self.delete_laser_event = pygame.event.custom_type()
         
@@ -133,13 +139,15 @@ class Game:
         self.impact_sound = pygame.mixer.Sound(join("Audio", "impact.ogg"))
         self.explosion_sound = pygame.mixer.Sound(join("Audio", "explosion.wav"))
         self.beep_sound = pygame.mixer.Sound(join("Audio", "beep.wav"))
+        self.powerup_sound = pygame.mixer.Sound(join("Audio", "powerup.mp3"))
         
         self.all_sounds = [
             self.music,
             self.shoot_sound,
             self.impact_sound,
             self.explosion_sound,
-            self.beep_sound
+            self.beep_sound,
+            self.powerup_sound
         ]
 
     def input(self):
@@ -170,6 +178,7 @@ class Game:
             self.shake_offset = (0, 0)
 
     def activate_shield(self):
+        self.powerup_sound.play()
         self.player.invincible = True
         pygame.time.set_timer(self.end_invincibility, 5000)
 
@@ -178,6 +187,7 @@ class Game:
             self.lives_remaining = 0
 
     def gain_life(self):
+        self.powerup_sound.play()
         self.lives_remaining += 1
         if self.lives_remaining == 2:
             self.timers = []
@@ -195,18 +205,27 @@ class Game:
                 self.shake_intensity = 50
 
     def activate_speed_boost(self):
+        self.powerup_sound.play()
         self.player.speed = 900
         pygame.time.set_timer(self.end_speed_boost, 5000)
 
     def activate_rapidfire(self):
+        self.powerup_sound.play()
         self.rapid_fire = True
         pygame.time.set_timer(self.end_rapid_fire, 5000)
 
     def slow_time(self):
+        self.powerup_sound.play()
         self.slowed = True
+        pygame.time.set_timer(self.reset_time, 5000)
+    
+    def freeze_time(self):
+        self.powerup_sound.play()
+        self.frozen = True
         pygame.time.set_timer(self.reset_time, 5000)
 
     def double_points_func(self):
+        self.powerup_sound.play()
         self.double_points = True
         pygame.time.set_timer(self.end_double_points, 5000)
 
@@ -219,6 +238,7 @@ class Game:
         self.collision_logic(self.player, self.laser_sprites, lambda: self.kill_player())
         self.collision_logic(self.player, self.enemy_bullet_sprites, lambda: self.minus_life())
         self.collision_logic(self.player, self.double_points_sprites, lambda: self.double_points_func())
+        self.collision_logic(self.player, self.freeze_time_sprites, lambda: self.freeze_time())
         
         for enemy in self.teleport_enemies:
             if enemy.is_over:
@@ -283,7 +303,7 @@ class Game:
             self.display_surface.blit(restart_text_surf, restart_text_rect)
             
             if self.shots_missed + self.shots_hit > 0:
-                self.accuracy = self.shots_hit / (self.shots_hit + self.shots_missed) * 100
+                self.accuracy = self.shots_hit / (self.shots_missed + self.shots_hit) * 100
             else:
                 self.accuracy = 0
             
@@ -404,7 +424,7 @@ class Game:
 
     def run(self):
         while self.running:
-            dt = self.clock.tick(0) / 1000
+            dt = self.clock.tick() / 1000
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     self.running = False
@@ -433,6 +453,9 @@ class Game:
 
                 if event.type == self.double_points_event and self.enemy_sprites:
                     PowerupItem((self.all_sprites, self.double_points_sprites, self.powerup_sprites), choice(list(self.enemy_sprites)), join("Images", "doublepoints.png"))
+                
+                if event.type == self.freeze_time_event and self.enemy_sprites:
+                    PowerupItem((self.all_sprites, self.freeze_time_sprites, self.powerup_sprites), choice(list(self.enemy_sprites)), join("Images", "freeze.png"))
 
                 if event.type == self.end_speed_boost:
                     self.player.speed = 550
@@ -442,6 +465,7 @@ class Game:
                 
                 if event.type == self.reset_time:
                     self.slowed = False
+                    self.frozen = False
 
                 if event.type == self.end_rapid_fire:
                     self.rapid_fire = False
@@ -503,6 +527,11 @@ class Game:
                     bullet.speed = 225
                 for powerup in self.powerup_sprites:
                     powerup.speed = 125
+            elif self.frozen:
+                for enemy in self.enemy_sprites:
+                    enemy.speed = 0
+                for bullet in self.enemy_bullet_sprites:
+                    bullet.kill()
             else:
                 for enemy in self.enemy_sprites:
                     enemy.speed = 500
