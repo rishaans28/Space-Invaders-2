@@ -147,7 +147,7 @@ class Game:
             self.impact_sound,
             self.explosion_sound,
             self.beep_sound,
-            self.powerup_sound
+            self.powerup_sound,
         ]
 
     def input(self):
@@ -218,7 +218,7 @@ class Game:
         self.powerup_sound.play()
         self.slowed = True
         pygame.time.set_timer(self.reset_time, 5000)
-    
+
     def freeze_time(self):
         self.powerup_sound.play()
         self.frozen = True
@@ -513,12 +513,14 @@ class Game:
                 self.impact_sound.set_volume(0)
                 self.explosion_sound.set_volume(0)
                 self.beep_sound.set_volume(0)
+                self.powerup_sound.set_volume(0)
             else:
-                self.music.set_volume(1)
+                self.music.set_volume(0.9)
                 self.shoot_sound.set_volume(0.5)
                 self.impact_sound.set_volume(2)
                 self.explosion_sound.set_volume(1)
                 self.beep_sound.set_volume(0.85)
+                self.powerup_sound.set_volume(1)
 
             if self.slowed:
                 for enemy in self.enemy_sprites:
