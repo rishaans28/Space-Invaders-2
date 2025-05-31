@@ -142,6 +142,7 @@ class Game:
         self.powerup_sound = pygame.mixer.Sound(join("Audio", "powerup.mp3"))
         self.whoosh_sound = pygame.mixer.Sound(join("Audio", "whoosh.wav"))
         self.alarm_sound = pygame.mixer.Sound(join("Audio", "alarm.mp3"))
+        self.laser_sound = pygame.mixer.Sound(join("Audio", "laser.wav"))
         
         self.all_sounds = [
             self.music,
@@ -152,6 +153,7 @@ class Game:
             self.powerup_sound,
             self.whoosh_sound,
             self.alarm_sound,
+            self.laser_sound,
         ]
 
     def input(self):
@@ -249,12 +251,16 @@ class Game:
                 self.kill_player()  
 
         for bullet in self.bullet_sprites:
-            enemies_hit = pygame.sprite.spritecollide(bullet, self.enemy_sprites, True, pygame.sprite.collide_mask) \
+            enemies_hit = pygame.sprite.spritecollide(bullet, self.enemy_sprites, False, pygame.sprite.collide_mask) \
                 or pygame.sprite.spritecollide(bullet, self.teleport_enemies, True, pygame.sprite.collide_mask)
             if enemies_hit:
                 bullet.kill()
                 for enemy in enemies_hit:
-                    Explosion(self.all_sprites, self.explosion_frames, enemy.rect.center)
+                    enemy.lives -= 1
+                    if enemy.lives <= 0:
+                        self.explosion_sound.play()
+                        enemy.kill()
+                        Explosion(self.all_sprites, self.explosion_frames, enemy.rect.center)
             self.enemies_killed += len(enemies_hit) * 2 if self.double_points else len(enemies_hit)
             self.shots_hit += len(enemies_hit)
 
@@ -489,6 +495,7 @@ class Game:
                         self.danger_sign.kill()
                     if self.danger_sign2:
                         self.danger_sign2.kill()
+                    self.laser_sound.play()
                     Laser((self.all_sprites, self.laser_sprites), self.danger_sign)
                     Laser((self.all_sprites, self.laser_sprites), self.danger_sign2) if self.danger_sign2 else None
                     pygame.time.set_timer(self.delete_laser_event, 2000)
@@ -521,6 +528,7 @@ class Game:
                 self.powerup_sound.set_volume(0)
                 self.whoosh_sound.set_volume(0)
                 self.alarm_sound.set_volume(0)
+                self.laser_sound.set_volume(0)
             else:
                 self.music.set_volume(0.9)
                 self.shoot_sound.set_volume(0.5)
@@ -530,6 +538,7 @@ class Game:
                 self.powerup_sound.set_volume(1)
                 self.whoosh_sound.set_volume(1)
                 self.alarm_sound.set_volume(1)
+                self.laser_sound.set_volume(1)
 
             if self.slowed:
                 for enemy in self.enemy_sprites:
@@ -545,11 +554,14 @@ class Game:
                     bullet.kill()
             else:
                 for enemy in self.enemy_sprites:
-                    enemy.speed = 500
+                    if enemy.has_three_lives:
+                        enemy.speed = THREE_LIFE_ENEMY_SPEED
+                    else:
+                        enemy.speed = ENEMY_SPEED
                 for bullet in self.enemy_bullet_sprites:
-                    bullet.speed = 550
+                    bullet.speed = BULLET_SPEED
                 for powerup in self.powerup_sprites:
-                    powerup.speed = 350
+                    powerup.speed = POWERUP_MOVING_SPEED
 
             self.player.cooldown_duration = 150 if self.rapid_fire else 500
 
