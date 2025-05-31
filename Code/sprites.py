@@ -59,8 +59,9 @@ class Enemy(pygame.sprite.Sprite):
         self.move(dt)
 
 class TeleportEnemy(Enemy):
-    def __init__(self, groups):
+    def __init__(self, groups, whoosh):
         super().__init__(groups, spawnx=0)
+        self.whoosh_shound = whoosh
         self.image = pygame.image.load(join("Images", "teleporter.png")).convert_alpha()
         self.rect = self.image.get_frect(center = (randint(0, WINDOW_WIDTH - 40), randint(0, WINDOW_HEIGHT - 200)))
         self.last_teleport_time = pygame.time.get_ticks()
@@ -71,6 +72,7 @@ class TeleportEnemy(Enemy):
     def move(self):
         current_time = pygame.time.get_ticks()
         if current_time - self.last_teleport_time  > self.teleport_interval:
+            self.whoosh_shound.play()
             self.rect.center = (randint(0, WINDOW_WIDTH - 40), randint(0, WINDOW_HEIGHT - 200))
             self.last_teleport_time = current_time
             self.times_teleported += 1
