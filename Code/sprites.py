@@ -33,10 +33,23 @@ class Player(pygame.sprite.Sprite):
 class Enemy(pygame.sprite.Sprite):
     def __init__(self, groups, spawnx):
         super().__init__(groups)
-        self.image = pygame.image.load(join("Images", "enemy.png")).convert_alpha()
-        self.rect = self.image.get_frect(midtop = (WINDOW_WIDTH / 2, 20))
+        self.has_three_lives = False
+        self.random_num = randint(1, 12)
+        self.lives = None
+        self.speed = None
+        self.image = None
+        if self.random_num == 1:
+            self.has_three_lives = True
+        if not self.has_three_lives:
+            self.image = pygame.image.load(join("Images", "enemy.png")).convert_alpha()
+            self.speed = ENEMY_SPEED
+            self.lives = 1
+        else:
+            self.image = pygame.image.load(join("Images", "three_life_enemy.png")).convert_alpha()
+            self.speed = THREE_LIFE_ENEMY_SPEED
+            self.lives = 3
         self.ychange = 100
-        self.speed = ENEMY_SPEED
+        self.rect = self.image.get_frect(midtop = (WINDOW_WIDTH / 2, 20))
         self.direction = pygame.Vector2(1,0)
         self.rect.centerx = spawnx
 
@@ -149,7 +162,7 @@ class Boss(pygame.sprite.Sprite):
         self.rect = self.image.get_frect(midbottom = (WINDOW_WIDTH/2, -100))
         self.speed = BOSS_MOVING_SPEED
         self.direction = pygame.Vector2(1,0)
-        self.lives = 10
+        self.lives = BOSS_LIVES
         self.anim = True
 
     def spawn_anim(self):
