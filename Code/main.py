@@ -77,7 +77,7 @@ class Game:
             self.double_points_sprites,
             self.teleport_enemies,
             self.star_sprites,
-            self.freeze_time_sprites
+            self.freeze_time_sprites,
         ]
 
         for _ in range(randint(20,30)):
@@ -135,11 +135,13 @@ class Game:
 
         self.music = pygame.mixer.Sound(join("Audio", "music.mp3"))
         self.music.play(loops=-1)
-        self.shoot_sound = pygame.mixer.Sound(join("Audio", "laser.wav"))
+        self.shoot_sound = pygame.mixer.Sound(join("Audio", "bullet.mp3"))
         self.impact_sound = pygame.mixer.Sound(join("Audio", "impact.ogg"))
         self.explosion_sound = pygame.mixer.Sound(join("Audio", "explosion.wav"))
         self.beep_sound = pygame.mixer.Sound(join("Audio", "beep.wav"))
         self.powerup_sound = pygame.mixer.Sound(join("Audio", "powerup.mp3"))
+        self.whoosh_sound = pygame.mixer.Sound(join("Audio", "whoosh.wav"))
+        self.alarm_sound = pygame.mixer.Sound(join("Audio", "alarm.mp3"))
         
         self.all_sounds = [
             self.music,
@@ -148,6 +150,8 @@ class Game:
             self.explosion_sound,
             self.beep_sound,
             self.powerup_sound,
+            self.whoosh_sound,
+            self.alarm_sound,
         ]
 
     def input(self):
@@ -474,6 +478,7 @@ class Game:
                     self.double_points = False
 
                 if event.type == self.warning_event:
+                    self.alarm_sound.play()
                     self.is_second_one = choice([True, False])
                     self.danger_sign = DangerSign(self.all_sprites, (randint(40, WINDOW_WIDTH-40), randint(40, WINDOW_HEIGHT-40)))
                     self.danger_sign2 = DangerSign(self.all_sprites, (randint(40, WINDOW_WIDTH-40), randint(40, WINDOW_HEIGHT-40))) if self.is_second_one else None
@@ -496,7 +501,7 @@ class Game:
                     pygame.time.set_timer(self.warning_event, randint(10000,15000))
 
                 if event.type == self.spawn_teleport_enemy and len(self.teleport_enemies) < 1:
-                    self.telep_enemy = TeleportEnemy((self.all_sprites, self.teleport_enemies))
+                    self.telep_enemy = TeleportEnemy((self.all_sprites, self.teleport_enemies), self.whoosh_sound)
 
                 if event.type == self.randomize_boss and self.boss.alive():
                     self.boss.randomize_direction()
@@ -514,13 +519,17 @@ class Game:
                 self.explosion_sound.set_volume(0)
                 self.beep_sound.set_volume(0)
                 self.powerup_sound.set_volume(0)
+                self.whoosh_sound.set_volume(0)
+                self.alarm_sound.set_volume(0)
             else:
                 self.music.set_volume(0.9)
                 self.shoot_sound.set_volume(0.5)
-                self.impact_sound.set_volume(2)
+                self.impact_sound.set_volume(1)
                 self.explosion_sound.set_volume(1)
                 self.beep_sound.set_volume(0.85)
                 self.powerup_sound.set_volume(1)
+                self.whoosh_sound.set_volume(1)
+                self.alarm_sound.set_volume(1)
 
             if self.slowed:
                 for enemy in self.enemy_sprites:
