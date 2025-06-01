@@ -93,7 +93,9 @@ class Game:
         self.at_one_life = False
 
         for _ in range(5):
-            Enemy((self.all_sprites, self.enemy_sprites), randint(0, WINDOW_WIDTH))
+            enemy = Enemy((self.all_sprites, self.enemy_sprites), randint(0, WINDOW_WIDTH))
+            if enemy.has_shield:
+                PowerupItem((self.all_sprites, self.break_shield_sprites, self.powerup_sprites), enemy, join("Images", "breakshield.png"))
 
         self.enemy_event = pygame.event.custom_type()
         pygame.time.set_timer(self.enemy_event, randint(1000,2000))
