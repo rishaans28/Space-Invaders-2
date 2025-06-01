@@ -3,6 +3,7 @@ from random import randint, choice
 from os.path import join
 
 WINDOW_WIDTH, WINDOW_HEIGHT = 1350, 800
+SHIELD_ENEMY_SPEED = 400
 THREE_LIFE_ENEMY_SPEED = 400
 ENEMY_SPEED = 500
 ENEMY_YCHANGE = 100
