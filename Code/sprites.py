@@ -33,21 +33,28 @@ class Player(pygame.sprite.Sprite):
 class Enemy(pygame.sprite.Sprite):
     def __init__(self, groups, spawnx):
         super().__init__(groups)
+        self.has_shield = False
         self.has_three_lives = False
-        self.random_num = randint(1, 12)
+        self.random_num = randint(1, 20)
         self.lives = None
         self.speed = None
         self.image = None
         if self.random_num == 1:
             self.has_three_lives = True
-        if not self.has_three_lives:
+        if self.random_num == 2:
+            self.has_shield = True
+        if not self.has_three_lives and not self.has_shield:
             self.image = pygame.image.load(join("Images", "enemy.png")).convert_alpha()
             self.speed = ENEMY_SPEED
             self.lives = 1
-        else:
+        elif self.has_three_lives:
             self.image = pygame.image.load(join("Images", "three_life_enemy.png")).convert_alpha()
             self.speed = THREE_LIFE_ENEMY_SPEED
             self.lives = 3
+        elif self.has_shield:
+            self.image = pygame.image.load(join("Images", "shield_enemy.png")).convert_alpha()
+            self.speed = SHIELD_ENEMY_SPEED
+            self.lives = 1
         self.ychange = 100
         self.rect = self.image.get_frect(midtop = (WINDOW_WIDTH / 2, 20))
         self.direction = pygame.Vector2(1,0)
