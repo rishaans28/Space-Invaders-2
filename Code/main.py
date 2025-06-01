@@ -44,6 +44,7 @@ class Game:
         self.shots_missed = 0
         self.accuracy = 0
         
+        self.can_break_shield = False
         self.explosion_frames = [pygame.image.load(join("Images", "Explosions", f"{i}.png")).convert_alpha() for i in range(21)]
 
         self.all_sprites = pygame.sprite.Group()
@@ -61,6 +62,8 @@ class Game:
         self.teleport_enemies = pygame.sprite.Group()
         self.star_sprites = pygame.sprite.Group()
         self.freeze_time_sprites = pygame.sprite.Group()
+        self.nuke_sprites = pygame.sprite.Group()
+        self.break_shield_sprites = pygame.sprite.Group()
         
         self.all_groups = [
             self.all_sprites,
@@ -78,6 +81,8 @@ class Game:
             self.teleport_enemies,
             self.star_sprites,
             self.freeze_time_sprites,
+            self.nuke_sprites,
+            self.break_shield_sprites
         ]
 
         for _ in range(randint(20,30)):
@@ -123,6 +128,7 @@ class Game:
         self.end_double_points = pygame.event.custom_type()
 
         self.freeze_time_event = pygame.event.custom_type()
+
         pygame.time.set_timer(self.freeze_time_event, randint(15000,20000))
         
         self.laser_event = pygame.event.custom_type()
@@ -132,6 +138,9 @@ class Game:
         
         self.spawn_teleport_enemy = pygame.event.custom_type()
         pygame.time.set_timer(self.spawn_teleport_enemy, randint(15000, 20000))
+        
+        self.check_nuke_timer = Timer(1000, self.check_nuke, True, True)
+        self.timers.append(self.check_nuke_timer)
 
         self.music = pygame.mixer.Sound(join("Audio", "music.mp3"))
         self.music.play(loops=-1)
@@ -235,6 +244,31 @@ class Game:
         self.double_points = True
         pygame.time.set_timer(self.end_double_points, 5000)
 
+    def BLOW_UP_NUKE(self):
+        self.explosion_sound.play()
+        self.nuke_sprites.empty()
+        for enemy in self.enemy_sprites:
+            enemy.kill()
+            Explosion(self.all_sprites, self.explosion_frames, enemy.rect.center)
+        for bullet in self.enemy_bullet_sprites:
+            bullet.kill()
+        for powerup in self.powerup_sprites:
+            powerup.kill()
+        self.enemies_killed += 30
+        self.shake_duration = 2000
+        self.shake_intensity = 100
+
+    def check_nuke(self):
+        random_num = randint(1,100)
+        if random_num == 1:
+            self.alarm_sound.play(loops=2)
+            if self.enemy_sprites:
+                PowerupItem((self.all_sprites, self.nuke_sprites, self.powerup_sprites), choice(list(self.enemy_sprites)), join("Images", "nuke.png"))
+
+    def turn_on_break_shield(self):
+        self.can_break_shield = True
+        self.powerup_sound.play()
+
     def check_collisions(self):
         self.collision_logic(self.player, self.shield_sprites, lambda: self.activate_shield())
         self.collision_logic(self.player, self.heart_sprites, lambda: self.gain_life())
@@ -245,6 +279,8 @@ class Game:
         self.collision_logic(self.player, self.enemy_bullet_sprites, lambda: self.minus_life())
         self.collision_logic(self.player, self.double_points_sprites, lambda: self.double_points_func())
         self.collision_logic(self.player, self.freeze_time_sprites, lambda: self.freeze_time())
+        self.collision_logic(self.player, self.nuke_sprites, lambda: self.BLOW_UP_NUKE())
+        self.collision_logic(self.player, self.break_shield_sprites, lambda: self.turn_on_break_shield())
         
         for enemy in self.teleport_enemies:
             if enemy.is_over:
@@ -256,11 +292,13 @@ class Game:
             if enemies_hit:
                 bullet.kill()
                 for enemy in enemies_hit:
-                    enemy.lives -= 1
-                    if enemy.lives <= 0:
-                        self.explosion_sound.play()
-                        enemy.kill()
-                        Explosion(self.all_sprites, self.explosion_frames, enemy.rect.center)
+                    if not enemy.has_shield or (enemy.has_shield and self.can_break_shield):
+                        self.can_break_shield = False
+                        enemy.lives -= 1
+                        if enemy.lives <= 0:
+                            self.explosion_sound.play()
+                            enemy.kill()
+                            Explosion(self.all_sprites, self.explosion_frames, enemy.rect.center)
             self.enemies_killed += len(enemies_hit) * 2 if self.double_points else len(enemies_hit)
             self.shots_hit += len(enemies_hit)
 
@@ -441,6 +479,8 @@ class Game:
 
                 if event.type == self.enemy_event:
                     self.enemy = Enemy((self.all_sprites, self.enemy_sprites), randint(0, WINDOW_WIDTH))
+                    if self.enemy.has_shield:
+                        PowerupItem((self.all_sprites, self.break_shield_sprites, self.powerup_sprites), self.enemy, join("Images", "breakshield.png"))
 
                 if event.type == self.enemy_bullet_event and (self.enemy_sprites or self.is_boss_active):
                     EnemyBullet((self.all_sprites, self.enemy_bullet_sprites), choice(list(self.enemy_sprites)), boss=False) if not self.is_boss_active \
