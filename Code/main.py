@@ -35,6 +35,7 @@ class Game:
         self.double_points = False
 
         self.muted = True
+        self.paused = False
         
         self.flash_heart = False
         self.flash_timer_in_arr = False
@@ -141,7 +142,7 @@ class Game:
         self.spawn_teleport_enemy = pygame.event.custom_type()
         pygame.time.set_timer(self.spawn_teleport_enemy, randint(15000, 20000))
         
-        self.check_nuke_timer = Timer(1000, self.check_nuke, True, True)
+        self.check_nuke_timer = Timer(5000, self.check_nuke, True, True)
         self.timers.append(self.check_nuke_timer)
 
         self.music = pygame.mixer.Sound(join("Audio", "music.mp3"))
@@ -478,6 +479,10 @@ class Game:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     self.running = False
+                
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_p:
+                        self.paused = not self.paused
 
                 if event.type == self.enemy_event:
                     self.enemy = Enemy((self.all_sprites, self.enemy_sprites), randint(0, WINDOW_WIDTH))
@@ -572,7 +577,7 @@ class Game:
                 self.alarm_sound.set_volume(0)
                 self.laser_sound.set_volume(0)
             else:
-                self.music.set_volume(0.9)
+                self.music.set_volume(0.8)
                 self.shoot_sound.set_volume(0.5)
                 self.impact_sound.set_volume(1)
                 self.explosion_sound.set_volume(1)
@@ -628,7 +633,10 @@ class Game:
                     adjusted_rect = sprite.rect.move(offset_x, offset_y)
                     self.display_surface.blit(sprite.image, adjusted_rect)
 
-                self.all_sprites.update(dt)
+                if not self.paused:
+                    self.all_sprites.update(dt)
+                    for timer in self.timers:
+                        timer.update()
                 self.display_fps()
                 self.input()
                 self.check_collisions()
@@ -637,15 +645,14 @@ class Game:
                 self.display_volume()
                 self.game_over()
                 self.boss_fight()
-                for timer in self.timers:
-                    timer.update()
             else:
                 self.display_game_over()
                 self.display_accuracy()
                 self.display_time_survived()
             self.display_highscore()
             self.display_score()
-            pygame.display.update()
+            if not self.paused:
+                pygame.display.update()
         pygame.quit()
 
 if __name__ == "__main__":
